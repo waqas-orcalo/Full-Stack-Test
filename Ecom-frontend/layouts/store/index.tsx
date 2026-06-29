@@ -28,6 +28,7 @@ import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useAuth } from "@hooks/use-auth";
 import { useCart } from "@root/contexts/cart-context";
 import { useThemePreset } from "@hooks/use-theme-preset";
+import { THEME_PRESETS } from "@theme/presets";
 import { paths } from "@root/path";
 
 /**
@@ -38,7 +39,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const router = useRouter();
   const { totalItems: cartCount } = useCart();
-  const { preset } = useThemePreset();
+  const { preset, presetId, setPreset } = useThemePreset();
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
   const closeMenu = () => setAnchor(null);
 
@@ -128,6 +129,31 @@ export function StoreLayout({ children }: { children: ReactNode }) {
                       Admin panel
                     </MenuItem>
                   )}
+                  <Divider />
+                  <Box sx={{ px: 2, py: 1 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Theme
+                    </Typography>
+                    <Stack direction="row" gap={0.75} mt={0.75}>
+                      {THEME_PRESETS.map((p) => (
+                        <Box
+                          key={p.id}
+                          title={p.name}
+                          onClick={() => setPreset(p.id)}
+                          sx={{
+                            width: 22,
+                            height: 22,
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            background: `linear-gradient(135deg, ${p.gradient[0]}, ${p.gradient[1]})`,
+                            outline: presetId === p.id ? "2px solid" : "2px solid transparent",
+                            outlineColor: presetId === p.id ? "text.primary" : "transparent",
+                            outlineOffset: 1,
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                  </Box>
                   <Divider />
                   <MenuItem
                     onClick={() => {
