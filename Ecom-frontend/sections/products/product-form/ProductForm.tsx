@@ -3,15 +3,17 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { FormProvider, useForm } from "react-hook-form";
+import { Controller, FormProvider, useForm } from "react-hook-form";
 import * as yup from "yup";
 import {
   Box,
   Card,
   FormControlLabel,
   Grid,
+  MenuItem,
   Stack,
   Switch,
+  TextField,
   Typography,
 } from "@mui/material";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
@@ -25,6 +27,7 @@ import {
   useUpdateProductMutation,
   useUploadProductImageMutation,
 } from "@services/app/products-api";
+import { useGetCategoriesQuery } from "@services/app/categories-api";
 import {
   ApiErrorState,
   Button,
@@ -77,6 +80,8 @@ export default function ProductForm({ productId }: { productId?: string }) {
   const [createProduct, { isLoading: isCreating }] = useCreateProductMutation();
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
   const [uploadImage, { isLoading: isUploading }] = useUploadProductImageMutation();
+  const { data: catData } = useGetCategoriesQuery();
+  const categories = catData?.data ?? [];
 
   const methods = useForm<FormValues>({
     resolver: yupResolver(schema),
@@ -216,7 +221,40 @@ export default function ProductForm({ productId }: { productId?: string }) {
                 <RHFTextField name="stockQuantity" label="Stock quantity" type="number" />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <RHFTextField name="category" label="Category" />
+                <Controller
+                  name="category"
+                  control={methods.control}
+                  render={({ field, fieldState: { error } }) => {
+                    const names = categories.map((c) => c.name);
+                    // Preserve a product's existing category even if it's not
+                    // in the managed list (e.g. legacy lowercase values).
+                    const options =
+                      field.value && !names.includes(field.value)
+                        ? [field.value, ...names]
+                        : names;
+                    return (
+                      <TextField
+                        {...field}
+                        select
+                        fullWidth
+                        label="Category"
+                        error={!!error}
+                        helperText={
+                          error?.message ??
+                          (categories.length === 0
+                            ? "No categories yet — add some under Categories"
+                            : undefined)
+                        }
+                      >
+                        {options.map((name) => (
+                          <MenuItem key={name} value={name} sx={{ textTransform: "capitalize" }}>
+                            {name}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    );
+                  }}
+                />
               </Grid>
               <Grid item xs={12}>
                 <RHFTextField

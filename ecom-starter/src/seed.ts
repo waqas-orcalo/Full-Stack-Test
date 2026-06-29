@@ -1,17 +1,17 @@
 /**
- * Database seed script.
- *
- * Seeds one admin, one customer, and 5 sample products. For each product it
- * downloads a real, topically-relevant photo (from LoremFlickr) into the
- * on-disk `images/` folder so images are self-hosted and served at /images/*.
+ * Full-application seed script — populates every feature with sample data.
  *
  *   npm run seed
  *
- * Requires internet access at seed time to fetch the photos. If a download
- * fails (offline), that product is seeded without an image and the rest
- * continue. Old auto-generated placeholders (seed-*.svg) are removed first.
+ * Wipes and recreates: 10 users, 10 categories, 40 products (with downloaded
+ * category images), shopping carts for several users, and 10 orders with varied
+ * statuses and dates.
  *
- * Idempotent: users are upserted; the 5 sample products are deleted and reseeded.
+ * Credentials (all passwords = 123456):
+ *   admin  -> admin@gmail.com
+ *   users  -> user1@gmail.com … user9@gmail.com
+ *
+ * Image download needs internet at seed time; failures degrade to no image.
  */
 import 'dotenv/config';
 import * as bcrypt from 'bcrypt';
@@ -19,121 +19,206 @@ import * as https from 'https';
 import * as http from 'http';
 import { createWriteStream, existsSync, mkdirSync, readdirSync, unlinkSync } from 'fs';
 import { join } from 'path';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { UserSchema, UserRole } from './modules/users/schemas/user.schema';
 import { ProductSchema } from './modules/products/schemas/product.schema';
+import { CategorySchema } from './modules/categories/schemas/category.schema';
+import { CartSchema } from './modules/cart/schemas/cart.schema';
+import { OrderSchema, OrderStatus } from './modules/orders/schemas/order.schema';
 
 const MONGODB_URI =
   process.env.MONGODB_URI ?? 'mongodb://localhost:27017/ecom_starter';
 const IMAGES_DIR = join(process.cwd(), 'images');
 
-const PRODUCTS = [
-  { name: 'Studio Headphones Pro', sku: 'AUD-001', price: 129, stockQuantity: 24, category: 'audio', description: 'Over-ear ANC headphones with 40-hour battery.', keyword: 'headphones' },
-  { name: 'Smart Watch Series 2', sku: 'WEA-001', price: 199, stockQuantity: 8, category: 'wearables', description: 'Fitness tracking and notifications, 7-day battery.', keyword: 'smartwatch' },
-  { name: 'Mirrorless Camera X', sku: 'CAM-001', price: 749, stockQuantity: 5, category: 'cameras', description: '24MP mirrorless camera with kit lens.', keyword: 'camera' },
-  { name: 'Mechanical Keyboard', sku: 'ACC-001', price: 89, stockQuantity: 30, category: 'accessories', description: 'Hot-swappable mechanical keyboard, RGB.', keyword: 'keyboard' },
-  { name: 'USB-C 7-in-1 Hub', sku: 'ACC-002', price: 39, stockQuantity: 60, category: 'accessories', description: 'HDMI, USB-A, SD and 100W PD charging.', keyword: 'usb' },
+const CATEGORIES: { name: string; keyword: string; products: string[] }[] = [
+  { name: 'Audio', keyword: 'headphones', products: ['Studio Headphones Pro', 'Wireless Earbuds Air', 'Portable Bluetooth Speaker', 'USB Condenser Mic'] },
+  { name: 'Wearables', keyword: 'smartwatch', products: ['Smart Watch Series 2', 'Fitness Band Lite', 'GPS Sport Watch', 'Sleep Tracker Ring'] },
+  { name: 'Cameras', keyword: 'camera', products: ['Mirrorless Camera X', 'Action Cam 4K', 'Vlogging Camera Kit', 'Instant Photo Printer'] },
+  { name: 'Accessories', keyword: 'gadget', products: ['USB-C 7-in-1 Hub', 'Wireless Charger Pad', 'Laptop Sleeve 14"', 'Cable Organizer Set'] },
+  { name: 'Computers', keyword: 'laptop', products: ['UltraBook 14 Pro', 'Gaming Laptop RTX', 'Mini Desktop PC', '2-in-1 Convertible'] },
+  { name: 'Phones', keyword: 'smartphone', products: ['Flagship Phone 5G', 'Budget Smartphone', 'Rugged Phone Max', 'Foldable Phone'] },
+  { name: 'Gaming', keyword: 'videogame', products: ['Game Controller Pro', 'Mechanical Keyboard RGB', 'Gaming Mouse 16K', 'VR Headset'] },
+  { name: 'Smart Home', keyword: 'smarthome', products: ['Smart Bulb Pack', 'Video Doorbell', 'Robot Vacuum', 'Smart Thermostat'] },
+  { name: 'Office', keyword: 'office', products: ['Ergonomic Chair', 'Standing Desk', 'Desk Lamp LED', 'Document Scanner'] },
+  { name: 'Storage', keyword: 'harddrive', products: ['Portable SSD 1TB', 'NAS 2-Bay', 'USB Flash 256GB', 'MicroSD 512GB'] },
 ];
 
-/** Download a URL to a file, following redirects. */
+const rand = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+const pick = <T>(arr: T[]): T => arr[rand(0, arr.length - 1)];
+
 function download(url: string, dest: string, redirects = 5): Promise<void> {
   return new Promise((resolve, reject) => {
     const lib = url.startsWith('https') ? https : http;
-    const req = lib.get(
-      url,
-      { headers: { 'User-Agent': 'Mozilla/5.0 (seed-script)' } },
-      (res) => {
-        const status = res.statusCode ?? 0;
-        if (status >= 300 && status < 400 && res.headers.location) {
-          res.resume();
-          if (redirects <= 0) return reject(new Error('Too many redirects'));
-          const next = res.headers.location.startsWith('http')
-            ? res.headers.location
-            : new URL(res.headers.location, url).toString();
-          return resolve(download(next, dest, redirects - 1));
-        }
-        if (status !== 200) {
-          res.resume();
-          return reject(new Error(`HTTP ${status}`));
-        }
-        const file = createWriteStream(dest);
-        res.pipe(file);
-        file.on('finish', () => file.close(() => resolve()));
-        file.on('error', reject);
-      },
-    );
+    const req = lib.get(url, { headers: { 'User-Agent': 'Mozilla/5.0 (seed)' } }, (res) => {
+      const status = res.statusCode ?? 0;
+      if (status >= 300 && status < 400 && res.headers.location) {
+        res.resume();
+        if (redirects <= 0) return reject(new Error('Too many redirects'));
+        const next = res.headers.location.startsWith('http')
+          ? res.headers.location
+          : new URL(res.headers.location, url).toString();
+        return resolve(download(next, dest, redirects - 1));
+      }
+      if (status !== 200) {
+        res.resume();
+        return reject(new Error(`HTTP ${status}`));
+      }
+      const file = createWriteStream(dest);
+      res.pipe(file);
+      file.on('finish', () => file.close(() => resolve()));
+      file.on('error', reject);
+    });
     req.on('error', reject);
     req.setTimeout(20000, () => req.destroy(new Error('timeout')));
   });
 }
 
-async function fetchImages(): Promise<Record<string, string>> {
+async function downloadCategoryImages(): Promise<Record<string, string>> {
   if (!existsSync(IMAGES_DIR)) mkdirSync(IMAGES_DIR, { recursive: true });
-  // Clean up old auto-generated placeholders.
   for (const f of readdirSync(IMAGES_DIR)) {
     if (/^seed-.*\.svg$/i.test(f)) unlinkSync(join(IMAGES_DIR, f));
   }
-
-  const urls: Record<string, string> = {};
-  for (const p of PRODUCTS) {
-    const file = `${p.sku.toLowerCase()}.jpg`;
-    const url = `https://loremflickr.com/600/450/${encodeURIComponent(p.keyword)}`;
+  const map: Record<string, string> = {};
+  console.log('Downloading category images...');
+  for (let i = 0; i < CATEGORIES.length; i++) {
+    const cat = CATEGORIES[i];
+    const file = `cat-${i + 1}-${cat.keyword}.jpg`;
     try {
-      await download(url, join(IMAGES_DIR, file));
-      urls[p.sku] = `/images/${file}`;
-      console.log(`  ✓ ${p.name} -> ${file}`);
+      await download(`https://loremflickr.com/600/450/${cat.keyword}`, join(IMAGES_DIR, file));
+      map[cat.name] = `/images/${file}`;
+      console.log(`  ✓ ${cat.name} -> ${file}`);
     } catch (err) {
-      console.warn(`  ✗ ${p.name}: image download failed (${(err as Error).message})`);
+      console.warn(`  ✗ ${cat.name}: ${(err as Error).message}`);
+      map[cat.name] = '';
     }
   }
-  return urls;
+  return map;
 }
 
 async function run() {
-  console.log('Downloading product images...');
-  const images = await fetchImages();
+  const images = await downloadCategoryImages();
 
   await mongoose.connect(MONGODB_URI);
   console.log(`Connected to ${MONGODB_URI}`);
 
   const User = mongoose.model('User', UserSchema);
+  const Category = mongoose.model('Category', CategorySchema);
   const Product = mongoose.model('Product', ProductSchema);
+  const Cart = mongoose.model('Cart', CartSchema);
+  const Order = mongoose.model('Order', OrderSchema);
 
-  const adminHash = await bcrypt.hash('admin123', 10);
-  const customerHash = await bcrypt.hash('customer123', 10);
+  // Fresh start.
+  await Promise.all([
+    User.deleteMany({}),
+    Category.deleteMany({}),
+    Product.deleteMany({}),
+    Cart.deleteMany({}),
+    Order.deleteMany({}),
+  ]);
+  console.log('Cleared existing data.');
 
-  await User.updateOne(
-    { email: 'admin@aurora.test' },
-    { $set: { name: 'Admin User', email: 'admin@aurora.test', passwordHash: adminHash, role: UserRole.ADMIN, deletedAt: null } },
-    { upsert: true },
+  // ---- Users (all password 123456) ----
+  const passwordHash = await bcrypt.hash('123456', 10);
+  const userDocs = [
+    { name: 'Admin', email: 'admin@gmail.com', passwordHash, role: UserRole.ADMIN, deletedAt: null },
+    ...Array.from({ length: 9 }, (_, i) => ({
+      name: `User ${i + 1}`,
+      email: `user${i + 1}@gmail.com`,
+      passwordHash,
+      role: UserRole.CUSTOMER,
+      deletedAt: null,
+    })),
+  ];
+  const users = await User.insertMany(userDocs);
+  const customers = users.filter((u) => u.role === UserRole.CUSTOMER);
+  console.log(`Seeded ${users.length} users (admin@gmail.com + user1..9@gmail.com).`);
+
+  // ---- Categories ----
+  await Category.insertMany(
+    CATEGORIES.map((c) => ({ name: c.name, description: `${c.name} products`, deletedAt: null })),
   );
-  await User.updateOne(
-    { email: 'customer@aurora.test' },
-    { $set: { name: 'Jane Customer', email: 'customer@aurora.test', passwordHash: customerHash, role: UserRole.CUSTOMER, deletedAt: null } },
-    { upsert: true },
-  );
-  console.log('Seeded users:');
-  console.log('  admin    -> admin@aurora.test / admin123');
-  console.log('  customer -> customer@aurora.test / customer123');
+  console.log(`Seeded ${CATEGORIES.length} categories.`);
 
-  // Remove the previous seed and insert the fresh set.
-  await Product.deleteMany({ sku: { $in: PRODUCTS.map((p) => p.sku) } });
-  const docs = PRODUCTS.map((p) => ({
-    name: p.name,
-    sku: p.sku,
-    price: p.price,
-    stockQuantity: p.stockQuantity,
-    category: p.category,
-    description: p.description,
-    imageUrl: images[p.sku] ?? '',
-    isActive: true,
-    deletedAt: null,
-  }));
-  await Product.insertMany(docs);
-  console.log(`Seeded ${docs.length} products.`);
+  // ---- Products (4 per category = 40) ----
+  const productDocs = CATEGORIES.flatMap((cat, ci) =>
+    cat.products.map((name, pi) => ({
+      name,
+      sku: `${cat.name.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase()}-${ci + 1}${pi + 1}`,
+      description: `${name} — quality ${cat.name.toLowerCase()} product.`,
+      price: rand(15, 800) + 0.99,
+      stockQuantity: rand(0, 120),
+      category: cat.name,
+      imageUrl: images[cat.name] ?? '',
+      isActive: true,
+      deletedAt: null,
+    })),
+  );
+  const products = await Product.insertMany(productDocs);
+  console.log(`Seeded ${products.length} products.`);
+
+  // ---- Carts (first 4 customers get 1–3 items) ----
+  let cartCount = 0;
+  for (const customer of customers.slice(0, 4)) {
+    const n = rand(1, 3);
+    const chosen = new Set<number>();
+    const items: { product: Types.ObjectId; quantity: number }[] = [];
+    while (items.length < n) {
+      const idx = rand(0, products.length - 1);
+      if (chosen.has(idx)) continue;
+      chosen.add(idx);
+      const p = products[idx];
+      if (p.stockQuantity < 1) continue;
+      items.push({ product: p._id as Types.ObjectId, quantity: rand(1, Math.min(3, p.stockQuantity)) });
+    }
+    if (items.length) {
+      await Cart.create({ user: customer._id, items });
+      cartCount++;
+    }
+  }
+  console.log(`Seeded ${cartCount} shopping carts.`);
+
+  // ---- Orders (10, varied status + dates) ----
+  const statuses = [
+    OrderStatus.DELIVERED, OrderStatus.DELIVERED, OrderStatus.DELIVERED,
+    OrderStatus.SHIPPED, OrderStatus.SHIPPED,
+    OrderStatus.PROCESSING, OrderStatus.PROCESSING,
+    OrderStatus.PENDING, OrderStatus.PENDING,
+    OrderStatus.CANCELLED,
+  ];
+  for (let i = 0; i < 10; i++) {
+    const customer = customers[i % customers.length];
+    const itemCount = rand(1, 4);
+    const chosen = new Set<number>();
+    const items: { product: Types.ObjectId; name: string; priceAtPurchase: number; quantity: number }[] = [];
+    let total = 0;
+    while (items.length < itemCount) {
+      const idx = rand(0, products.length - 1);
+      if (chosen.has(idx)) continue;
+      chosen.add(idx);
+      const p = products[idx];
+      const quantity = rand(1, 3);
+      total += p.price * quantity;
+      items.push({
+        product: p._id as Types.ObjectId,
+        name: p.name,
+        priceAtPurchase: p.price,
+        quantity,
+      });
+    }
+    const order = await Order.create({
+      user: customer._id,
+      items,
+      totalAmount: Math.round(total * 100) / 100,
+      status: statuses[i],
+    });
+    // Spread createdAt over the last ~60 days for nicer history/charts.
+    const created = new Date(Date.now() - rand(0, 60) * 24 * 60 * 60 * 1000);
+    await Order.updateOne({ _id: order._id }, { $set: { createdAt: created } }, { timestamps: false });
+  }
+  console.log('Seeded 10 orders.');
 
   await mongoose.disconnect();
-  console.log('Done.');
+  console.log('Done. Login with admin@gmail.com / 123456 (or user1@gmail.com … user9@gmail.com).');
 }
 
 run().catch((err) => {

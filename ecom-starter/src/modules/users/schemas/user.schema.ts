@@ -33,7 +33,9 @@ export class User {
   @Prop({ required: true, trim: true, lowercase: true, unique: true, index: true })
   email: string;
 
-  @Prop({ required: true })
+  // select: false → never returned by queries unless explicitly requested,
+  // so the hash cannot leak even if a response forgets to strip it.
+  @Prop({ required: true, select: false })
   passwordHash: string;
 
   @Prop({ required: true, trim: true })

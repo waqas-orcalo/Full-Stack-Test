@@ -16,6 +16,7 @@ import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -28,6 +29,7 @@ const SIDEBAR_BG = "#1D1C4D";
 const navItems = [
   { label: "Dashboard", href: paths.admin.dashboard, icon: <DashboardOutlinedIcon />, exact: true },
   { label: "Products", href: paths.admin.products, icon: <Inventory2OutlinedIcon /> },
+  { label: "Categories", href: paths.admin.categories, icon: <CategoryOutlinedIcon /> },
   { label: "Orders", href: paths.admin.orders, icon: <ReceiptLongOutlinedIcon /> },
 ];
 

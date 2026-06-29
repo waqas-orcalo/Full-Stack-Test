@@ -10,9 +10,11 @@ export class UsersService {
     private readonly userModel: Model<UserDocument>,
   ) {}
 
+  /** Includes passwordHash (select:false) — only used for credential checks. */
   findByEmail(email: string): Promise<UserDocument | null> {
     return this.userModel
       .findOne({ email: email.trim().toLowerCase(), deletedAt: null })
+      .select('+passwordHash')
       .exec();
   }
 
