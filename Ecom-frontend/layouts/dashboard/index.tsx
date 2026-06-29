@@ -24,6 +24,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { paths } from "@root/path";
 import { useAuth } from "@hooks/use-auth";
 import { useThemePreset } from "@hooks/use-theme-preset";
+import { NotificationsBell } from "@sections/admin/notifications";
 
 const DRAWER_WIDTH = 248;
 
@@ -70,6 +71,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             Admin
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
+          <NotificationsBell />
         </Toolbar>
       </AppBar>
 
