@@ -37,7 +37,7 @@ export class Product {
   sku: string;
 
   @Prop({ default: 0, min: 0 })
-  stock: number;
+  stockQuantity: number;
 
   @Prop({ trim: true, default: 'general', index: true })
   category: string;

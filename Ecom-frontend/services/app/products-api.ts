@@ -2,8 +2,8 @@ import { baseAPI } from "../base-api";
 import { PRODUCTS } from "../tags";
 import type {
   ApiResponse,
-  PaginatedProducts,
   Product,
+  ProductListResponse,
   ProductPayload,
   ProductQuery,
 } from "@root/types/product";
@@ -15,8 +15,8 @@ import type {
 export const productsAPI = baseAPI.injectEndpoints({
   overrideExisting: true,
   endpoints: (builder) => ({
-    // GET /products  -> { data: { items, total, page, limit, totalPages } }
-    getProducts: builder.query<ApiResponse<PaginatedProducts>, ProductQuery>({
+    // GET /products  -> { data: Product[], total, page, totalPages }
+    getProducts: builder.query<ProductListResponse, ProductQuery>({
       query: (params) => ({
         url: "/products",
         method: "GET",
@@ -44,14 +44,14 @@ export const productsAPI = baseAPI.injectEndpoints({
       invalidatesTags: [PRODUCTS],
     }),
 
-    // PATCH /products/:id
+    // PUT /products/:id
     updateProduct: builder.mutation<
       ApiResponse<Product>,
-      { id: string; body: Partial<ProductPayload> }
+      { id: string; body: ProductPayload }
     >({
       query: ({ id, body }) => ({
         url: `/products/${id}`,
-        method: "PATCH",
+        method: "PUT",
         body,
       }),
       invalidatesTags: [PRODUCTS],

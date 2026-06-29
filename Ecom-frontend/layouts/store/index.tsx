@@ -21,6 +21,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import { useAuth } from "@hooks/use-auth";
+import { useGetCartQuery } from "@services/app/cart-api";
 import { paths } from "@root/path";
 
 /**
@@ -31,6 +32,9 @@ import { paths } from "@root/path";
 export function StoreLayout({ children }: { children: ReactNode }) {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const router = useRouter();
+  // Only fetch the cart when logged in (endpoint is auth-only).
+  const { data: cartData } = useGetCartQuery(undefined, { skip: !isAuthenticated });
+  const cartCount = cartData?.data.totalItems ?? 0;
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
@@ -95,8 +99,12 @@ export function StoreLayout({ children }: { children: ReactNode }) {
           <IconButton sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2 }}>
             <FavoriteBorderIcon fontSize="small" />
           </IconButton>
-          <IconButton sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2 }}>
-            <Badge color="primary" variant="dot" invisible>
+          <IconButton
+            component={Link}
+            href={paths.cart}
+            sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2 }}
+          >
+            <Badge color="primary" badgeContent={cartCount} invisible={cartCount === 0}>
               <ShoppingCartOutlinedIcon fontSize="small" />
             </Badge>
           </IconButton>

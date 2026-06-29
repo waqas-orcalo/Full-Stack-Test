@@ -1,5 +1,7 @@
-import { StoreCatalog } from "@sections/store/store-catalog";
+import { redirect } from "next/navigation";
+import { paths } from "@root/path";
 
-export default function ProductsPage() {
-  return <StoreCatalog />;
+// Storefront catalog moved to /shop.
+export default function LegacyProductsRedirect() {
+  redirect(paths.products.base);
 }

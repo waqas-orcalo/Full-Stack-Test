@@ -4,12 +4,18 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
-import { PaginatedResult } from '../../common/dto/pagination.dto';
+import { FilterQuery, Model, SortOrder, isValidObjectId } from 'mongoose';
 import { CreateProductDto } from './dto/create-product.dto';
-import { QueryProductDto } from './dto/query-product.dto';
+import { ProductSortBy, QueryProductDto } from './dto/query-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product, ProductDocument } from './schemas/product.schema';
+
+export interface ProductListResult {
+  data: Product[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
 
 @Injectable()
 export class ProductsService {
@@ -27,25 +33,35 @@ export class ProductsService {
     return this.productModel.create({ ...dto, sku });
   }
 
-  async findAll(query: QueryProductDto): Promise<PaginatedResult<Product>> {
-    const { page, limit, search, category } = query;
+  async findAll(query: QueryProductDto): Promise<ProductListResult> {
+    const { page, limit, search, category, minPrice, maxPrice, sortBy } = query;
 
     const filter: FilterQuery<ProductDocument> = { deletedAt: null };
     if (category) {
       filter.category = category;
     }
+    // Search by name (case-insensitive, ILIKE-equivalent).
     if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { sku: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-      ];
+      filter.name = { $regex: search, $options: 'i' };
+    }
+    // Price range (combinable).
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      filter.price = {};
+      if (minPrice !== undefined) filter.price.$gte = minPrice;
+      if (maxPrice !== undefined) filter.price.$lte = maxPrice;
     }
 
-    const [items, total] = await Promise.all([
+    const sort: Record<string, SortOrder> =
+      sortBy === ProductSortBy.PRICE_ASC
+        ? { price: 1 }
+        : sortBy === ProductSortBy.PRICE_DESC
+          ? { price: -1 }
+          : { createdAt: -1 }; // newest (default)
+
+    const [data, total] = await Promise.all([
       this.productModel
         .find(filter)
-        .sort({ createdAt: -1 })
+        .sort(sort)
         .skip((page - 1) * limit)
         .limit(limit)
         .exec(),
@@ -53,15 +69,17 @@ export class ProductsService {
     ]);
 
     return {
-      items,
+      data,
       total,
       page,
-      limit,
       totalPages: Math.ceil(total / limit) || 1,
     };
   }
 
   async findOne(id: string): Promise<Product> {
+    if (!isValidObjectId(id)) {
+      throw new NotFoundException(`Product ${id} not found`);
+    }
     const product = await this.productModel
       .findOne({ _id: id, deletedAt: null })
       .exec();
@@ -72,6 +90,9 @@ export class ProductsService {
   }
 
   async update(id: string, dto: UpdateProductDto): Promise<Product> {
+    if (!isValidObjectId(id)) {
+      throw new NotFoundException(`Product ${id} not found`);
+    }
     const update: Record<string, unknown> = { ...dto };
     if (dto.sku) {
       const sku = dto.sku.trim().toUpperCase();
@@ -100,6 +121,9 @@ export class ProductsService {
    * document, preserving history (COSMONYX-BE-001 convention).
    */
   async remove(id: string): Promise<{ id: string; deleted: boolean }> {
+    if (!isValidObjectId(id)) {
+      throw new NotFoundException(`Product ${id} not found`);
+    }
     const product = await this.productModel
       .findOneAndUpdate(
         { _id: id, deletedAt: null },

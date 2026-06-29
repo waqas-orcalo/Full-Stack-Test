@@ -1,8 +1,9 @@
 export const paths = {
   products: {
-    base: "/products",
-    view: (id: string | number) => `/products/${id}`,
+    base: "/shop",
+    view: (id: string | number) => `/shop/${id}`,
   },
+  cart: "/cart",
   auth: {
     login: "/login",
     signup: "/signup",

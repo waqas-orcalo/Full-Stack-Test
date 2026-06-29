@@ -1,9 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
+  IsInt,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
   Min,
 } from 'class-validator';
@@ -19,9 +20,8 @@ export class CreateProductDto {
   @IsString()
   description?: string;
 
-  @ApiProperty({ example: 29.99 })
-  @IsNumber()
-  @Min(0)
+  @ApiProperty({ example: 29.99, description: 'Must be a positive number' })
+  @IsPositive({ message: 'price must be a positive number' })
   price: number;
 
   @ApiProperty({ example: 'WM-001' })
@@ -29,11 +29,11 @@ export class CreateProductDto {
   @IsNotEmpty()
   sku: string;
 
-  @ApiPropertyOptional({ example: 100, default: 0 })
+  @ApiPropertyOptional({ example: 100, default: 0, description: 'Non-negative integer' })
   @IsOptional()
-  @IsNumber()
-  @Min(0)
-  stock?: number;
+  @IsInt({ message: 'stockQuantity must be an integer' })
+  @Min(0, { message: 'stockQuantity must be a non-negative integer' })
+  stockQuantity?: number;
 
   @ApiPropertyOptional({ example: 'accessories', default: 'general' })
   @IsOptional()

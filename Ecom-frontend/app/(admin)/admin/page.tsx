@@ -14,12 +14,12 @@ import { paths } from "@root/path";
 export default function AdminDashboardPage() {
   const { user } = useAuth();
   const { data } = useGetProductsQuery({ page: 1, limit: 100 });
-  const items = data?.data.items ?? [];
+  const items = data?.data ?? [];
 
-  const totalProducts = data?.data.total ?? items.length;
-  const lowStock = items.filter((p) => p.stock > 0 && p.stock <= 5).length;
-  const soldOut = items.filter((p) => p.stock <= 0).length;
-  const inventoryValue = items.reduce((sum, p) => sum + p.price * p.stock, 0);
+  const totalProducts = data?.total ?? items.length;
+  const lowStock = items.filter((p) => p.stockQuantity > 0 && p.stockQuantity <= 5).length;
+  const soldOut = items.filter((p) => p.stockQuantity <= 0).length;
+  const inventoryValue = items.reduce((sum, p) => sum + p.price * p.stockQuantity, 0);
 
   const kpis = [
     { label: "Products", value: totalProducts },

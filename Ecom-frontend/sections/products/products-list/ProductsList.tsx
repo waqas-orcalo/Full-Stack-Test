@@ -57,8 +57,8 @@ export default function ProductsList() {
 
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
 
-  const result = data?.data;
-  const products = useMemo(() => result?.items ?? [], [result]);
+  const products = useMemo(() => data?.data ?? [], [data]);
+  const total = data?.total ?? 0;
 
   const handleDelete = async () => {
     if (!toDelete) return;
@@ -162,7 +162,7 @@ export default function ProductsList() {
                       <TableCell align="right">
                         ${product.price.toFixed(2)}
                       </TableCell>
-                      <TableCell align="right">{product.stock}</TableCell>
+                      <TableCell align="right">{product.stockQuantity}</TableCell>
                       <TableCell>
                         <Chip
                           size="small"
@@ -200,7 +200,7 @@ export default function ProductsList() {
 
             <TablePagination
               component="div"
-              count={result?.total ?? 0}
+              count={total}
               page={page}
               onPageChange={(_, newPage) => setPage(newPage)}
               rowsPerPage={limit}

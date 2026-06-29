@@ -40,11 +40,12 @@ const schema = yup.object({
   price: yup
     .number()
     .typeError("Price must be a number")
-    .min(0, "Price cannot be negative")
+    .positive("Price must be a positive number")
     .required("Price is required"),
-  stock: yup
+  stockQuantity: yup
     .number()
     .typeError("Stock must be a number")
+    .integer("Stock must be a whole number")
     .min(0, "Stock cannot be negative")
     .default(0),
   category: yup.string().default("general"),
@@ -59,7 +60,7 @@ const defaultValues: FormValues = {
   name: "",
   sku: "",
   price: 0,
-  stock: 0,
+  stockQuantity: 0,
   category: "general",
   description: "",
   imageUrl: "",
@@ -105,7 +106,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
         name: p.name,
         sku: p.sku,
         price: p.price,
-        stock: p.stock,
+        stockQuantity: p.stockQuantity,
         category: p.category,
         description: p.description ?? "",
         imageUrl: p.imageUrl ?? "",
@@ -212,7 +213,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
                 <RHFTextField name="price" label="Price" type="number" />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <RHFTextField name="stock" label="Stock" type="number" />
+                <RHFTextField name="stockQuantity" label="Stock quantity" type="number" />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <RHFTextField name="category" label="Category" />

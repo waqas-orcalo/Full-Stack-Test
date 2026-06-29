@@ -5,8 +5,8 @@ import {
   Delete,
   Get,
   Param,
-  Patch,
   Post,
+  Put,
   Query,
   UploadedFile,
   UseGuards,
@@ -27,7 +27,6 @@ import { randomUUID } from 'crypto';
 import { ApiResponseDto } from '../../common/dto/api-response.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductsService } from './products.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -88,10 +87,11 @@ export class ProductsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List products (paginated, filterable)' })
+  @ApiOperation({ summary: 'List products (public, filterable, sortable)' })
   async findAll(@Query() query: QueryProductDto) {
-    const result = await this.productsService.findAll(query);
-    return ApiResponseDto.of(result, 'Products fetched successfully');
+    // Returns the spec shape directly: { data, total, page, totalPages }.
+    // The global TransformInterceptor leaves paginated payloads unwrapped.
+    return this.productsService.findAll(query);
   }
 
   @Get(':id')
@@ -102,13 +102,13 @@ export class ProductsController {
     return ApiResponseDto.of(product, 'Product fetched successfully');
   }
 
-  @Patch(':id')
+  @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a product (admin only)' })
   @ApiParam({ name: 'id', description: 'Product id (Mongo ObjectId)' })
-  async update(@Param('id') id: string, @Body() dto: UpdateProductDto) {
+  async update(@Param('id') id: string, @Body() dto: CreateProductDto) {
     const product = await this.productsService.update(id, dto);
     return ApiResponseDto.of(product, 'Product updated successfully');
   }
