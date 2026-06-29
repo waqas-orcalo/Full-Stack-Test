@@ -19,7 +19,6 @@ import {
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import { useAuth } from "@hooks/use-auth";
 import { useCart } from "@root/contexts/cart-context";
 import { paths } from "@root/path";
@@ -94,9 +93,6 @@ export function StoreLayout({ children }: { children: ReactNode }) {
 
           <Box sx={{ flexGrow: 1 }} />
 
-          <IconButton sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2 }}>
-            <FavoriteBorderIcon fontSize="small" />
-          </IconButton>
           <IconButton
             component={Link}
             href={paths.cart}
