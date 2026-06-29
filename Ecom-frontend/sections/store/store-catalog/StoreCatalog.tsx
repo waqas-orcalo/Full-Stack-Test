@@ -18,13 +18,13 @@ import SearchIcon from "@mui/icons-material/Search";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 
 import { useGetProductsQuery } from "@services/app/products-api";
+import { useGetCategoriesQuery } from "@services/app/categories-api";
 import { paths } from "@root/path";
 import { ApiErrorState, EmptyState, Loading } from "@components/index";
 import ProductCard from "@components/product-card/ProductCard";
 import type { ProductSortBy } from "@root/types/product";
 
 const LIMIT = 9;
-const CATEGORIES = ["all", "audio", "wearables", "cameras", "accessories"];
 
 export default function StoreCatalog() {
   const router = useRouter();
@@ -74,6 +74,8 @@ export default function StoreCatalog() {
     sortBy: sort,
   });
   const { data: recoData } = useGetProductsQuery({ page: 1, limit: 4 });
+  const { data: catData } = useGetCategoriesQuery();
+  const categoryOptions = ["all", ...(catData?.data.map((c) => c.name) ?? [])];
 
   const totalPages = data?.totalPages ?? 1;
   const total = data?.total ?? 0;
@@ -165,7 +167,7 @@ export default function StoreCatalog() {
 
         {/* Category pills */}
         <Stack direction="row" gap={1} mt={2} flexWrap="wrap">
-          {CATEGORIES.map((c) => (
+          {categoryOptions.map((c) => (
             <Chip
               key={c}
               label={c === "all" ? "All" : c}

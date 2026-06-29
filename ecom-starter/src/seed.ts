@@ -17,7 +17,7 @@ import 'dotenv/config';
 import * as bcrypt from 'bcrypt';
 import * as https from 'https';
 import * as http from 'http';
-import { createWriteStream, existsSync, mkdirSync, readdirSync, unlinkSync } from 'fs';
+import { createWriteStream, existsSync, mkdirSync, readdirSync, unlinkSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import mongoose, { Types } from 'mongoose';
 import { UserSchema, UserRole } from './modules/users/schemas/user.schema';
@@ -73,6 +73,26 @@ function download(url: string, dest: string, redirects = 5): Promise<void> {
   });
 }
 
+const PALETTE: [string, string][] = [
+  ['#6366F1', '#312E81'], ['#7C3AED', '#4B11A2'], ['#0EA5E9', '#075985'],
+  ['#10B981', '#065F46'], ['#F59E0B', '#92400E'], ['#EF4444', '#7F1D1D'],
+  ['#EC4899', '#831843'], ['#14B8A6', '#115E59'], ['#8B5CF6', '#4C1D95'],
+  ['#F97316', '#7C2D12'],
+];
+
+/** Write a branded SVG placeholder for a category and return its public path. */
+function writePlaceholder(i: number, name: string): string {
+  const [a, b] = PALETTE[i % PALETTE.length];
+  const file = `cat-${i + 1}-placeholder.svg`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="450" viewBox="0 0 600 450">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs>
+  <rect width="600" height="450" fill="url(#g)"/>
+  <text x="50%" y="52%" fill="#ffffff" font-family="Arial, sans-serif" font-size="42" font-weight="700" text-anchor="middle">${name}</text>
+</svg>`;
+  writeFileSync(join(IMAGES_DIR, file), svg, 'utf8');
+  return `/images/${file}`;
+}
+
 async function downloadCategoryImages(): Promise<Record<string, string>> {
   if (!existsSync(IMAGES_DIR)) mkdirSync(IMAGES_DIR, { recursive: true });
   for (const f of readdirSync(IMAGES_DIR)) {
@@ -83,13 +103,27 @@ async function downloadCategoryImages(): Promise<Record<string, string>> {
   for (let i = 0; i < CATEGORIES.length; i++) {
     const cat = CATEGORIES[i];
     const file = `cat-${i + 1}-${cat.keyword}.jpg`;
-    try {
-      await download(`https://loremflickr.com/600/450/${cat.keyword}`, join(IMAGES_DIR, file));
-      map[cat.name] = `/images/${file}`;
-      console.log(`  ✓ ${cat.name} -> ${file}`);
-    } catch (err) {
-      console.warn(`  ✗ ${cat.name}: ${(err as Error).message}`);
-      map[cat.name] = '';
+    // Try multiple sources in order; fall back to a generated placeholder so
+    // a product image is NEVER empty.
+    const sources = [
+      `https://loremflickr.com/600/450/${cat.keyword}`,
+      `https://picsum.photos/seed/${cat.keyword}/600/450`,
+    ];
+    let done = false;
+    for (const url of sources) {
+      try {
+        await download(url, join(IMAGES_DIR, file));
+        map[cat.name] = `/images/${file}`;
+        console.log(`  ✓ ${cat.name} -> ${file}`);
+        done = true;
+        break;
+      } catch (err) {
+        console.warn(`  … ${cat.name}: ${url} failed (${(err as Error).message})`);
+      }
+    }
+    if (!done) {
+      map[cat.name] = writePlaceholder(i, cat.name);
+      console.log(`  ◇ ${cat.name} -> generated placeholder`);
     }
   }
   return map;
