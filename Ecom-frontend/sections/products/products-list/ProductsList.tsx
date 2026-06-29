@@ -1,0 +1,215 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  Card,
+  Chip,
+  IconButton,
+  InputAdornment,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  TextField,
+  Tooltip,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import SearchIcon from "@mui/icons-material/Search";
+import toast from "react-hot-toast";
+
+import { paths } from "@root/path";
+import {
+  useDeleteProductMutation,
+  useGetProductsQuery,
+} from "@services/app/products-api";
+import {
+  ApiErrorState,
+  Button,
+  ConfirmDialog,
+  EmptyState,
+  Loading,
+  PageHeader,
+} from "@components/index";
+import type { Product } from "@root/types/product";
+
+export default function ProductsList() {
+  const router = useRouter();
+  const [page, setPage] = useState(0); // MUI is 0-based; API is 1-based
+  const [limit, setLimit] = useState(10);
+  const [search, setSearch] = useState("");
+  const [toDelete, setToDelete] = useState<Product | null>(null);
+
+  const { data, isLoading, isError, isFetching } = useGetProductsQuery({
+    page: page + 1,
+    limit,
+    search: search || undefined,
+  });
+
+  const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
+
+  const result = data?.data;
+  const products = useMemo(() => result?.items ?? [], [result]);
+
+  const handleDelete = async () => {
+    if (!toDelete) return;
+    try {
+      await deleteProduct(toDelete.id).unwrap();
+      toast.success(`"${toDelete.name}" deleted`);
+      setToDelete(null);
+    } catch {
+      toast.error("Failed to delete product");
+    }
+  };
+
+  return (
+    <>
+      <PageHeader
+        title="Products"
+        subtitle="Manage your catalogue"
+        action={
+          <Button
+            component={Link}
+            href={paths.products.create}
+            variant="contained"
+            startIcon={<AddIcon />}
+          >
+            Add Product
+          </Button>
+        }
+      />
+
+      <Card sx={{ p: 2 }}>
+        <Stack direction="row" mb={2}>
+          <TextField
+            placeholder="Search by name, SKU or description"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
+            sx={{ maxWidth: 360 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Stack>
+
+        {isLoading ? (
+          <Loading label="Loading products..." />
+        ) : isError ? (
+          <ApiErrorState />
+        ) : products.length === 0 ? (
+          <EmptyState
+            title="No products found"
+            description="Create your first product to get started."
+            action={
+              <Button
+                component={Link}
+                href={paths.products.create}
+                variant="contained"
+                startIcon={<AddIcon />}
+              >
+                Add Product
+              </Button>
+            }
+          />
+        ) : (
+          <>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>SKU</TableCell>
+                    <TableCell>Category</TableCell>
+                    <TableCell align="right">Price</TableCell>
+                    <TableCell align="right">Stock</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell align="right">Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody sx={{ opacity: isFetching ? 0.6 : 1 }}>
+                  {products.map((product) => (
+                    <TableRow key={product.id} hover>
+                      <TableCell>{product.name}</TableCell>
+                      <TableCell>{product.sku}</TableCell>
+                      <TableCell>{product.category}</TableCell>
+                      <TableCell align="right">
+                        ${product.price.toFixed(2)}
+                      </TableCell>
+                      <TableCell align="right">{product.stock}</TableCell>
+                      <TableCell>
+                        <Chip
+                          size="small"
+                          label={product.isActive ? "Active" : "Inactive"}
+                          color={product.isActive ? "success" : "default"}
+                          variant="outlined"
+                        />
+                      </TableCell>
+                      <TableCell align="right">
+                        <Tooltip title="Edit">
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              router.push(paths.products.edit(product.id))
+                            }
+                          >
+                            <EditOutlinedIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete">
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => setToDelete(product)}
+                          >
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            <TablePagination
+              component="div"
+              count={result?.total ?? 0}
+              page={page}
+              onPageChange={(_, newPage) => setPage(newPage)}
+              rowsPerPage={limit}
+              onRowsPerPageChange={(e) => {
+                setLimit(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
+              rowsPerPageOptions={[5, 10, 25, 50]}
+            />
+          </>
+        )}
+      </Card>
+
+      <ConfirmDialog
+        open={!!toDelete}
+        title="Delete product?"
+        description={`This will remove "${toDelete?.name}" from the catalogue.`}
+        confirmText="Delete"
+        loading={isDeleting}
+        onConfirm={handleDelete}
+        onClose={() => setToDelete(null)}
+      />
+    </>
+  );
+}
