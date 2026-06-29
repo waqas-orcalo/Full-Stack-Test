@@ -21,7 +21,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import { useAuth } from "@hooks/use-auth";
-import { useGetCartQuery } from "@services/app/cart-api";
+import { useCart } from "@root/contexts/cart-context";
 import { paths } from "@root/path";
 
 /**
@@ -32,9 +32,7 @@ import { paths } from "@root/path";
 export function StoreLayout({ children }: { children: ReactNode }) {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const router = useRouter();
-  // Only fetch the cart when logged in (endpoint is auth-only).
-  const { data: cartData } = useGetCartQuery(undefined, { skip: !isAuthenticated });
-  const cartCount = cartData?.data.totalItems ?? 0;
+  const { totalItems: cartCount } = useCart();
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
@@ -116,6 +114,9 @@ export function StoreLayout({ children }: { children: ReactNode }) {
                   Admin panel
                 </Button>
               )}
+              <Button component={Link} href={paths.orders.base} size="small" color="inherit">
+                Orders
+              </Button>
               <Chip
                 avatar={<Avatar>{user?.name?.[0]?.toUpperCase() ?? "U"}</Avatar>}
                 label={user?.name ?? "Account"}

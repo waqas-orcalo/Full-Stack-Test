@@ -56,7 +56,7 @@ export function AdminGuard({ children }: { children: ReactNode }) {
     if (!isAuthenticated) {
       router.replace(paths.auth.login);
     } else if (!isAdmin) {
-      router.replace(paths.products.base);
+      router.replace("/");
     }
   }, [isAuthenticated, isAdmin, router]);
 

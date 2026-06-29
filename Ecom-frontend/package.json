@@ -25,6 +25,7 @@
     "react-hook-form": "^7.54.2",
     "react-hot-toast": "^2.6.0",
     "react-redux": "^9.2.0",
+    "recharts": "^2.15.0",
     "redux": "^5.0.1",
     "redux-persist": "^6.0.0",
     "tss-react": "^4.9.19",

@@ -4,11 +4,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, SortOrder, isValidObjectId } from 'mongoose';
+import { FilterQuery, Model, SortOrder, Types, isValidObjectId } from 'mongoose';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductSortBy, QueryProductDto } from './dto/query-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product, ProductDocument } from './schemas/product.schema';
+import { Order, OrderDocument } from '../orders/schemas/order.schema';
 
 export interface ProductListResult {
   data: Product[];
@@ -22,7 +23,42 @@ export class ProductsService {
   constructor(
     @InjectModel(Product.name)
     private readonly productModel: Model<ProductDocument>,
+    @InjectModel(Order.name)
+    private readonly orderModel: Model<OrderDocument>,
   ) {}
+
+  /**
+   * Content-based suggestions: up to 4 products in the same category as the
+   * viewed one, excluding itself and (when authenticated) anything the user has
+   * already ordered. Newest first.
+   */
+  async findSuggestions(id: string, userId?: string): Promise<Product[]> {
+    const product = await this.findOne(id); // 404s for bad/unknown id
+
+    const excludeIds: Types.ObjectId[] = [new Types.ObjectId(id)];
+    if (userId) {
+      const orders = await this.orderModel
+        .find({ user: new Types.ObjectId(userId) })
+        .select('items.product')
+        .exec();
+      for (const order of orders) {
+        for (const item of order.items) {
+          excludeIds.push(item.product);
+        }
+      }
+    }
+
+    return this.productModel
+      .find({
+        category: product.category,
+        deletedAt: null,
+        isActive: true,
+        _id: { $nin: excludeIds },
+      })
+      .sort({ createdAt: -1 })
+      .limit(4)
+      .exec();
+  }
 
   async create(dto: CreateProductDto): Promise<Product> {
     const sku = dto.sku.trim().toUpperCase();

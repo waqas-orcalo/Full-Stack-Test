@@ -8,6 +8,8 @@ import { ProductsModule } from './modules/products/products.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CartModule } from './modules/cart/cart.module';
+import { OrdersModule } from './modules/orders/orders.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { CartModule } from './modules/cart/cart.module';
     AuthModule,
     ProductsModule,
     CartModule,
+    OrdersModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

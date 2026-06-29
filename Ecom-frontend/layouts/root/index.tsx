@@ -10,6 +10,7 @@ import { PersistGate } from "redux-persist/integration/react";
 
 import { createTheme } from "@theme/index";
 import { Persistor, Store } from "@store/index";
+import { CartProvider } from "@root/contexts/cart-context";
 import { Toaster } from "@components/toaster";
 
 interface LayoutProps {
@@ -29,7 +30,7 @@ export function Layout({ children }: LayoutProps) {
         <PersistGate loading={null} persistor={Persistor}>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            {children}
+            <CartProvider>{children}</CartProvider>
             <Toaster />
           </ThemeProvider>
         </PersistGate>

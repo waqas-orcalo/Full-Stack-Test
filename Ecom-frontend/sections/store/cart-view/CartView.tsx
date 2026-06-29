@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Avatar,
   Box,
@@ -20,27 +21,18 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import toast from "react-hot-toast";
 
-import {
-  useGetCartQuery,
-  useRemoveCartItemMutation,
-  useUpdateCartItemMutation,
-} from "@services/app/cart-api";
+import { useCart } from "@root/contexts/cart-context";
 import { resolveImageUrl } from "@root/config";
 import { paths } from "@root/path";
 import { Button, EmptyState, Loading, PageHeader } from "@components/index";
 
 export default function CartView() {
-  const { data, isLoading } = useGetCartQuery();
-  const [updateItem] = useUpdateCartItemMutation();
-  const [removeItem] = useRemoveCartItemMutation();
-
-  const cart = data?.data;
-  const items = cart?.items ?? [];
+  const router = useRouter();
+  const { cartItems, totalItems, subtotal, total, isLoading, updateItem, removeItem } = useCart();
 
   const changeQty = async (productId: string, quantity: number) => {
-    if (quantity < 1) return;
     try {
-      await updateItem({ productId, quantity }).unwrap();
+      await updateItem(productId, quantity); // qty <= 0 removes server-side
     } catch (err) {
       const message = (err as { data?: { message?: string } })?.data?.message ?? "Could not update";
       toast.error(Array.isArray(message) ? message.join(", ") : message);
@@ -49,7 +41,7 @@ export default function CartView() {
 
   const remove = async (productId: string, name: string) => {
     try {
-      await removeItem(productId).unwrap();
+      await removeItem(productId);
       toast.success(`${name} removed`);
     } catch {
       toast.error("Could not remove item");
@@ -62,7 +54,7 @@ export default function CartView() {
     <>
       <PageHeader title="Shopping cart" subtitle="Review your items before checkout" />
 
-      {items.length === 0 ? (
+      {cartItems.length === 0 ? (
         <EmptyState
           title="Your cart is empty"
           description="Browse the catalogue and add something you like."
@@ -87,7 +79,7 @@ export default function CartView() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {items.map(({ product, quantity, lineTotal }) => (
+                  {cartItems.map(({ product, quantity, lineTotal }) => (
                     <TableRow key={product.id}>
                       <TableCell>
                         <Stack direction="row" alignItems="center" gap={1.5}>
@@ -99,8 +91,15 @@ export default function CartView() {
                             {product.name[0]}
                           </Avatar>
                           <Box>
-                            <Typography fontWeight={600}>{product.name}</Typography>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography
+                              component={Link}
+                              href={paths.products.view(product.id)}
+                              fontWeight={600}
+                              sx={{ textDecoration: "none", color: "inherit" }}
+                            >
+                              {product.name}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" display="block">
                               {product.category}
                             </Typography>
                           </Box>
@@ -147,11 +146,11 @@ export default function CartView() {
               </Typography>
               <Stack direction="row" justifyContent="space-between" sx={{ py: 0.5, color: "text.secondary" }}>
                 <span>Items</span>
-                <span>{cart?.totalItems ?? 0}</span>
+                <span>{totalItems}</span>
               </Stack>
               <Stack direction="row" justifyContent="space-between" sx={{ py: 0.5, color: "text.secondary" }}>
                 <span>Subtotal</span>
-                <span>${(cart?.subtotal ?? 0).toFixed(2)}</span>
+                <span>${subtotal.toFixed(2)}</span>
               </Stack>
               <Stack direction="row" justifyContent="space-between" sx={{ py: 0.5, color: "text.secondary" }}>
                 <span>Shipping</span>
@@ -163,10 +162,15 @@ export default function CartView() {
                 sx={{ pt: 1.5, mt: 1, borderTop: "1px solid", borderColor: "divider", fontWeight: 700, fontSize: 18 }}
               >
                 <span>Total</span>
-                <span>${(cart?.total ?? 0).toFixed(2)}</span>
+                <span>${total.toFixed(2)}</span>
               </Stack>
-              <Button variant="contained" fullWidth sx={{ mt: 2 }} disabled>
-                Checkout (coming soon)
+              <Button
+                variant="contained"
+                fullWidth
+                sx={{ mt: 2 }}
+                onClick={() => router.push(paths.checkout)}
+              >
+                Proceed to checkout
               </Button>
               <Button component={Link} href={paths.products.base} fullWidth sx={{ mt: 1 }} color="inherit">
                 Continue shopping

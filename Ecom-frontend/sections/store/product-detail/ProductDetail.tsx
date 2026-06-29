@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import {
   Box,
   Card,
-  CardContent,
   Chip,
   Grid,
   IconButton,
@@ -22,14 +21,15 @@ import toast from "react-hot-toast";
 
 import {
   useGetProductByIdQuery,
-  useGetProductsQuery,
+  useGetProductSuggestionsQuery,
 } from "@services/app/products-api";
-import { useAddToCartMutation } from "@services/app/cart-api";
+import { useCart } from "@root/contexts/cart-context";
 import { resolveImageUrl } from "@root/config";
 import { stockBadge } from "@utils/stock";
 import { useAuth } from "@hooks/use-auth";
 import { paths } from "@root/path";
 import { ApiErrorState, Button, Loading } from "@components/index";
+import ProductCard from "@components/product-card/ProductCard";
 import type { Product } from "@root/types/product";
 
 function Thumb({ product, big = false }: { product: Product; big?: boolean }) {
@@ -67,11 +67,13 @@ export default function ProductDetail({ productId }: { productId: string }) {
 
   const { data, isLoading, isError } = useGetProductByIdQuery(productId);
   const product = data?.data;
-  const [addToCartApi, { isLoading: adding }] = useAddToCartMutation();
+  const { addItem } = useCart();
+  const [adding, setAdding] = useState(false);
 
-  // Suggestions: a small set from the same catalogue (excludes the current one).
-  const { data: more } = useGetProductsQuery({ page: 1, limit: 5 });
-  const suggestions = (more?.data ?? []).filter((p) => p.id !== productId).slice(0, 4);
+  // Content-based suggestions from the backend (same category, excludes self
+  // and the user's already-ordered products when logged in).
+  const { data: suggestionsRes } = useGetProductSuggestionsQuery(productId);
+  const suggestions = suggestionsRes?.data ?? [];
 
   if (isLoading) return <Loading label="Loading product…" />;
   if (isError || !product) return <ApiErrorState message="Product not found." />;
@@ -88,12 +90,15 @@ export default function ProductDetail({ productId }: { productId: string }) {
       return;
     }
     try {
-      await addToCartApi({ productId, quantity: qty }).unwrap();
+      setAdding(true);
+      await addItem(productId, qty);
       toast.success(`${qty} × ${product.name} added to cart`);
     } catch (err) {
       const message =
         (err as { data?: { message?: string } })?.data?.message ?? "Could not add to cart";
       toast.error(Array.isArray(message) ? message.join(", ") : message);
+    } finally {
+      setAdding(false);
     }
   };
 
@@ -184,38 +189,12 @@ export default function ProductDetail({ productId }: { productId: string }) {
       {suggestions.length > 0 && (
         <Box mt={5}>
           <Typography variant="h6" fontWeight={700} mb={2}>
-            You may also like
+            You might also like
           </Typography>
           <Grid container spacing={2}>
             {suggestions.map((p) => (
               <Grid item xs={6} md={3} key={p.id}>
-                <Card
-                  component={Link}
-                  href={paths.products.view(p.id)}
-                  sx={{
-                    display: "block",
-                    textDecoration: "none",
-                    color: "inherit",
-                    height: "100%",
-                    transition: ".15s",
-                    "&:hover": { boxShadow: 4, transform: "translateY(-2px)" },
-                  }}
-                >
-                  <Thumb product={p} />
-                  <CardContent>
-                    <Typography variant="subtitle2" fontWeight={600} noWrap>
-                      {p.name}
-                    </Typography>
-                    <Stack direction="row" justifyContent="space-between" mt={0.5}>
-                      <Typography color="primary.dark" fontWeight={700}>
-                        ${p.price.toFixed(2)}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {p.stockQuantity > 0 ? "In stock" : "Sold out"}
-                      </Typography>
-                    </Stack>
-                  </CardContent>
-                </Card>
+                <ProductCard product={p} compact />
               </Grid>
             ))}
           </Grid>

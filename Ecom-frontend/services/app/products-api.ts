@@ -34,6 +34,12 @@ export const productsAPI = baseAPI.injectEndpoints({
       providesTags: [PRODUCTS],
     }),
 
+    // GET /products/:id/suggestions  (same-category, excludes self + ordered)
+    getProductSuggestions: builder.query<ApiResponse<Product[]>, string>({
+      query: (id) => ({ url: `/products/${id}/suggestions`, method: "GET" }),
+      providesTags: [PRODUCTS],
+    }),
+
     // POST /products
     createProduct: builder.mutation<ApiResponse<Product>, ProductPayload>({
       query: (body) => ({
@@ -83,6 +89,7 @@ export const productsAPI = baseAPI.injectEndpoints({
 export const {
   useGetProductsQuery,
   useGetProductByIdQuery,
+  useGetProductSuggestionsQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,

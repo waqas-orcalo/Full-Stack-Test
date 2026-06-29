@@ -29,8 +29,10 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
 import { ProductsService } from './products.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from '../users/schemas/user.schema';
 
 const IMAGE_DIR = './images';
@@ -100,6 +102,21 @@ export class ProductsController {
   async findOne(@Param('id') id: string) {
     const product = await this.productsService.findOne(id);
     return ApiResponseDto.of(product, 'Product fetched successfully');
+  }
+
+  @Get(':id/suggestions')
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({
+    summary:
+      'Related products (same category, excludes self + your ordered items if logged in)',
+  })
+  @ApiParam({ name: 'id', description: 'Product id (Mongo ObjectId)' })
+  async suggestions(
+    @Param('id') id: string,
+    @CurrentUser('id') userId?: string,
+  ) {
+    const products = await this.productsService.findSuggestions(id, userId);
+    return ApiResponseDto.of(products, 'Suggestions');
   }
 
   @Put(':id')
