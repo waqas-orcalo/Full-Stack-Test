@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import configuration, { validationSchema } from './config/configuration';
 import { ProductsModule } from './modules/products/products.module';
+import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { ProductsModule } from './modules/products/products.module';
       }),
     }),
     // Feature modules (ecom domains live here).
+    UsersModule,
+    AuthModule,
     ProductsModule,
   ],
   controllers: [AppController],

@@ -12,14 +12,18 @@ import {
   Grid,
   Stack,
   Switch,
+  Typography,
 } from "@mui/material";
+import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 import toast from "react-hot-toast";
 
 import { paths } from "@root/path";
+import { resolveImageUrl } from "@root/config";
 import {
   useCreateProductMutation,
   useGetProductByIdQuery,
   useUpdateProductMutation,
+  useUploadProductImageMutation,
 } from "@services/app/products-api";
 import {
   ApiErrorState,
@@ -45,6 +49,7 @@ const schema = yup.object({
     .default(0),
   category: yup.string().default("general"),
   description: yup.string().default(""),
+  imageUrl: yup.string().default(""),
   isActive: yup.boolean().default(true),
 });
 
@@ -57,6 +62,7 @@ const defaultValues: FormValues = {
   stock: 0,
   category: "general",
   description: "",
+  imageUrl: "",
   isActive: true,
 };
 
@@ -69,12 +75,28 @@ export default function ProductForm({ productId }: { productId?: string }) {
   });
   const [createProduct, { isLoading: isCreating }] = useCreateProductMutation();
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
+  const [uploadImage, { isLoading: isUploading }] = useUploadProductImageMutation();
 
   const methods = useForm<FormValues>({
     resolver: yupResolver(schema),
     defaultValues,
   });
-  const { handleSubmit, reset, register } = methods;
+  const { handleSubmit, reset, register, watch, setValue } = methods;
+  const imageUrl = watch("imageUrl");
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const res = await uploadImage(file).unwrap();
+      setValue("imageUrl", res.data.url, { shouldDirty: true });
+      toast.success("Image uploaded");
+    } catch {
+      toast.error("Image upload failed");
+    } finally {
+      e.target.value = "";
+    }
+  };
 
   useEffect(() => {
     if (data?.data) {
@@ -86,6 +108,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
         stock: p.stock,
         category: p.category,
         description: p.description ?? "",
+        imageUrl: p.imageUrl ?? "",
         isActive: p.isActive,
       });
     }
@@ -101,7 +124,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
         await createProduct(payload).unwrap();
         toast.success("Product created");
       }
-      router.push(paths.products.base);
+      router.push(paths.admin.products);
     } catch (err) {
       const message =
         (err as { data?: { message?: string } })?.data?.message ??
@@ -125,6 +148,59 @@ export default function ProductForm({ productId }: { productId?: string }) {
       <FormProvider {...methods}>
         <Box component="form" onSubmit={handleSubmit(onSubmit)}>
           <Card sx={{ p: 3, maxWidth: 720 }}>
+            <Box sx={{ mb: 2.5 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Product image
+              </Typography>
+              <Stack direction="row" gap={2} alignItems="center">
+                <Box
+                  sx={{
+                    width: 96,
+                    height: 96,
+                    borderRadius: 2,
+                    border: "1px dashed",
+                    borderColor: "divider",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    bgcolor: "action.hover",
+                    color: "text.disabled",
+                  }}
+                >
+                  {imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={resolveImageUrl(imageUrl)}
+                      alt="Product preview"
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <ImageOutlinedIcon />
+                  )}
+                </Box>
+                <Stack gap={1}>
+                  <Button component="label" variant="outlined" disabled={isUploading}>
+                    {isUploading ? "Uploading…" : "Upload image"}
+                    <input
+                      hidden
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      onChange={handleFile}
+                    />
+                  </Button>
+                  {imageUrl && (
+                    <Button
+                      color="inherit"
+                      size="small"
+                      onClick={() => setValue("imageUrl", "", { shouldDirty: true })}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </Stack>
+              </Stack>
+            </Box>
             <Grid container spacing={2.5}>
               <Grid item xs={12} sm={8}>
                 <RHFTextField name="name" label="Name" />
@@ -163,7 +239,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
               </Button>
               <Button
                 color="inherit"
-                onClick={() => router.push(paths.products.base)}
+                onClick={() => router.push(paths.admin.products)}
                 disabled={saving}
               >
                 Cancel

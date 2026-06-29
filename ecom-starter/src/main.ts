@@ -1,19 +1,31 @@
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
+import { existsSync, mkdirSync } from 'fs';
+import { join } from 'path';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const config = app.get(ConfigService);
 
   app.setGlobalPrefix('api');
 
-  app.use(helmet());
+  // Serve uploaded product images from disk at /images/* (outside the /api prefix).
+  const imagesDir = join(process.cwd(), 'images');
+  if (!existsSync(imagesDir)) {
+    mkdirSync(imagesDir, { recursive: true });
+  }
+  app.useStaticAssets(imagesDir, { prefix: '/images/' });
+
+  // helmet with cross-origin resource policy relaxed so the separate frontend
+  // origin can load images served from this API.
+  app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.enableCors({
     origin: config.get<string[]>('corsOrigins'),
     credentials: true,

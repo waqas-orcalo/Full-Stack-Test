@@ -14,6 +14,8 @@ export const validationSchema = Joi.object({
   PORT: Joi.number().default(8000),
   CORS_ORIGINS: Joi.string().default('http://localhost:8000'),
   MONGODB_URI: Joi.string().required(),
+  JWT_SECRET: Joi.string().required(),
+  JWT_EXPIRES_IN: Joi.string().default('7d'),
   SWAGGER_USER: Joi.string().optional().allow(''),
   SWAGGER_PASSWORD: Joi.string().optional().allow(''),
 });
@@ -26,4 +28,6 @@ export default () => ({
     .map((origin) => origin.trim())
     .filter(Boolean),
   mongodbUri: process.env.MONGODB_URI,
+  jwtSecret: process.env.JWT_SECRET,
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
 });

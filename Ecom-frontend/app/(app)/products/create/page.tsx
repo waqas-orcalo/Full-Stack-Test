@@ -1,5 +1,7 @@
-import { ProductForm } from "@sections/products/product-form";
+import { redirect } from "next/navigation";
+import { paths } from "@root/path";
 
-export default function CreateProductPage() {
-  return <ProductForm />;
+// Product creation moved to the guarded admin area.
+export default function LegacyCreateRedirect() {
+  redirect(paths.admin.createProduct);
 }

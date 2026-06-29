@@ -40,6 +40,11 @@ export class CreateProductDto {
   @IsString()
   category?: string;
 
+  @ApiPropertyOptional({ example: '/images/abc123.png', description: 'Relative path returned by POST /products/upload' })
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
+
   @ApiPropertyOptional({ example: true, default: true })
   @IsOptional()
   @IsBoolean()

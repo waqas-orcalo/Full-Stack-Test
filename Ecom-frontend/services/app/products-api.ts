@@ -68,6 +68,15 @@ export const productsAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [PRODUCTS],
     }),
+
+    // POST /products/upload  (multipart) -> { url: "/images/<file>" }
+    uploadProductImage: builder.mutation<ApiResponse<{ url: string }>, File>({
+      query: (file) => {
+        const body = new FormData();
+        body.append("file", file);
+        return { url: "/products/upload", method: "POST", body };
+      },
+    }),
   }),
 });
 
@@ -77,4 +86,5 @@ export const {
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
+  useUploadProductImageMutation,
 } = productsAPI;

@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mini E-Commerce — UI/UX Design Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --indigo-50:#EEF2FF; --indigo-100:#E3E2F5; --indigo-200:#C7D2FE; --indigo-500:#6366F1;
+  --indigo-600:#4F46E5; --indigo-700:#4338CA; --indigo-800:#312E81; --indigo-900:#1D1C4D;
+  --violet-500:#7C3AED; --violet-100:#EDE9FE;
+  --bg:#F6F7FB; --surface:#FFFFFF; --surface-2:#F9FAFB;
+  --border:#E8EAF0; --border-strong:#D8DCE6;
+  --text:#111827; --muted:#6B7280; --faint:#9CA3AF;
+  --success:#10B981; --success-bg:#ECFDF5; --warning:#F59E0B; --warning-bg:#FFFBEB;
+  --danger:#EF4444; --danger-bg:#FEF2F2; --info:#3B82F6; --info-bg:#EFF6FF;
+  --r-sm:8px; --r:12px; --r-lg:16px; --pill:999px;
+  --shadow:0 1px 2px rgba(16,24,40,.06); --shadow-md:0 6px 20px rgba(16,24,40,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:'Outfit','Inter',sans-serif;letter-spacing:-.01em}
+.app-nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.app-nav .brand{font-family:'Outfit';font-weight:800;font-size:16px;color:var(--indigo-800);display:flex;align-items:center;gap:8px}
+.app-nav .brand .dot{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,var(--indigo-600),var(--violet-500))}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-left:8px}
+.tab{font-size:13px;font-weight:500;color:var(--muted);padding:6px 12px;border-radius:var(--pill);cursor:pointer;border:1px solid transparent;white-space:nowrap}
+.tab:hover{background:var(--surface-2);color:var(--text)}
+.tab.active{background:var(--indigo-50);color:var(--indigo-700);border-color:var(--indigo-100)}
+.tab-group-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding:0 6px;align-self:center}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 80px}
+.screen{display:none}
+.screen.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.screen-head{margin-bottom:18px}
+.screen-head h2{font-size:22px;font-weight:700}
+.screen-head p{color:var(--muted);font-size:14px;margin-top:2px}
+/* faux browser/app frame */
+.frame{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-md)}
+.frame-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface-2);border-bottom:1px solid var(--border)}
+.frame-bar .dots{display:flex;gap:6px}.frame-bar .dots i{width:11px;height:11px;border-radius:50%;background:var(--border-strong);display:block}
+.frame-bar .url{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--pill);font-size:12px;color:var(--muted);padding:5px 12px;text-align:center}
+/* store top bar */
+.store-top{display:flex;align-items:center;gap:18px;padding:14px 22px;border-bottom:1px solid var(--border)}
+.store-top .logo{font-family:'Outfit';font-weight:800;color:var(--indigo-800);font-size:18px;display:flex;align-items:center;gap:8px}
+.store-top .logo .dot{width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,var(--indigo-600),var(--violet-500))}
+.store-top nav{display:flex;gap:18px;font-size:14px;color:var(--muted);font-weight:500}
+.store-top nav a{color:var(--muted);text-decoration:none}.store-top nav a.on{color:var(--indigo-700)}
+.searchbar{flex:1;max-width:380px;display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--pill);padding:8px 14px;color:var(--faint);font-size:13px}
+.icon-btn{width:38px;height:38px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;position:relative;color:var(--text)}
+.icon-btn .badge{position:absolute;top:-6px;right:-6px;background:var(--indigo-600);color:#fff;font-size:10px;font-weight:700;border-radius:var(--pill);min-width:17px;height:17px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+/* buttons */
+.btn{font-family:inherit;font-size:14px;font-weight:600;border-radius:var(--r-sm);padding:10px 16px;border:1px solid transparent;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:.15s}
+.btn-primary{background:var(--indigo-600);color:#fff}.btn-primary:hover{background:var(--indigo-700)}
+.btn-ghost{background:var(--surface);color:var(--text);border-color:var(--border-strong)}.btn-ghost:hover{background:var(--surface-2)}
+.btn-danger{background:var(--danger-bg);color:var(--danger);border-color:#FBD5D5}
+.btn-sm{padding:7px 12px;font-size:13px}
+.btn-block{width:100%;justify-content:center}
+/* chips/badges */
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:var(--pill);background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:var(--pill)}
+.status::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.st-pending{background:var(--warning-bg);color:#B45309}
+.st-processing{background:var(--info-bg);color:#1D4ED8}
+.st-shipped{background:var(--violet-100);color:#6D28D9}
+.st-delivered{background:var(--success-bg);color:#047857}
+.st-cancelled{background:var(--danger-bg);color:#B91C1C}
+/* inputs */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+.input,select.input{width:100%;font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--border-strong);border-radius:var(--r-sm);background:var(--surface);color:var(--text)}
+.input::placeholder{color:var(--faint)}
+.input:focus{outline:none;border-color:var(--indigo-500);box-shadow:0 0 0 3px var(--indigo-50)}
+/* product grid */
+.catalog{display:grid;grid-template-columns:230px 1fr;gap:22px;padding:22px}
+.filters .filt-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.filters h4{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);margin-bottom:10px}
+.check{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);padding:5px 0;cursor:pointer}
+.check input{accent-color:var(--indigo-600);width:15px;height:15px}
+.range-row{display:flex;gap:8px;align-items:center}
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.toolbar .count{font-size:13px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:.15s;cursor:pointer}
+.pcard:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.pcard .thumb{aspect-ratio:4/3;background:linear-gradient(135deg,var(--indigo-50),var(--violet-100));display:flex;align-items:center;justify-content:center;color:var(--indigo-200);font-size:34px;position:relative}
+.pcard .thumb .cat{position:absolute;top:10px;left:10px}
+.pcard .body{padding:12px 14px}
+.pcard .name{font-size:14px;font-weight:600;margin-bottom:2px}
+.pcard .meta{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.price{font-family:'Outfit';font-weight:700;color:var(--indigo-800);font-size:16px}
+.stock{font-size:12px;color:var(--muted)}
+.stock.low{color:#B45309}
+.pager{display:flex;gap:6px;justify-content:center;margin-top:22px}
+.pager .pg{min-width:34px;height:34px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.pager .pg.on{background:var(--indigo-600);color:#fff;border-color:var(--indigo-600)}
+.section-title{font-family:'Outfit';font-weight:700;font-size:18px;margin:6px 0 12px;display:flex;align-items:center;gap:8px}
+.reco-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+/* detail */
+.detail{display:grid;grid-template-columns:1fr 1fr;gap:30px;padding:24px}
+.detail .gallery{aspect-ratio:1;background:linear-gradient(135deg,var(--indigo-50),var(--violet-100));border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;color:var(--indigo-200);font-size:64px}
+.qty{display:inline-flex;align-items:center;border:1px solid var(--border-strong);border-radius:var(--r-sm);overflow:hidden}
+.qty button{width:38px;height:40px;border:none;background:var(--surface);font-size:18px;cursor:pointer;color:var(--text)}
+.qty span{width:46px;text-align:center;font-weight:600;border-left:1px solid var(--border);border-right:1px solid var(--border);height:40px;display:flex;align-items:center;justify-content:center}
+/* cart + tables */
+.two-col{display:grid;grid-template-columns:1fr 320px;gap:22px;padding:24px}
+table.tbl{width:100%;border-collapse:collapse;font-size:14px}
+table.tbl th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);font-weight:700;padding:10px 12px;border-bottom:1px solid var(--border)}
+table.tbl td{padding:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.line-prod{display:flex;align-items:center;gap:12px}
+.line-prod .mini{width:48px;height:48px;border-radius:var(--r-sm);background:linear-gradient(135deg,var(--indigo-50),var(--violet-100))}
+.summary{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;height:fit-content}
+.summary h4{font-size:15px;margin-bottom:14px}
+.summary .row{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);padding:6px 0}
+.summary .row.total{color:var(--text);font-weight:700;font-size:17px;border-top:1px solid var(--border);margin-top:8px;padding-top:12px}
+/* confirmation */
+.confirm{text-align:center;padding:48px 24px}
+.confirm .tick{width:72px;height:72px;border-radius:50%;background:var(--success-bg);color:var(--success);display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 18px}
+/* auth */
+.auth-wrap{display:grid;grid-template-columns:1fr 1fr;min-height:520px}
+.auth-art{background:linear-gradient(150deg,var(--indigo-800),var(--violet-500));color:#fff;padding:40px;display:flex;flex-direction:column;justify-content:space-between}
+.auth-art h2{color:#fff;font-size:26px;line-height:1.25}
+.auth-art p{color:rgba(255,255,255,.8);font-size:14px;margin-top:10px}
+.auth-form{padding:40px;display:flex;flex-direction:column;justify-content:center}
+.seg{display:flex;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;margin-bottom:20px}
+.seg button{flex:1;border:none;background:none;padding:8px;font-weight:600;font-size:13px;border-radius:6px;cursor:pointer;color:var(--muted)}
+.seg button.on{background:var(--surface);color:var(--indigo-700);box-shadow:var(--shadow)}
+/* ADMIN shell */
+.admin{display:grid;grid-template-columns:212px 1fr;min-height:620px}
+.admin-side{background:var(--indigo-900);color:#fff;padding:18px 14px;display:flex;flex-direction:column;gap:4px}
+.admin-side .a-brand{font-family:'Outfit';font-weight:800;font-size:15px;display:flex;align-items:center;gap:8px;padding:6px 8px 16px}
+.admin-side .a-brand .dot{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,var(--indigo-500),var(--violet-500))}
+.admin-side a{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:500;color:rgba(255,255,255,.7);padding:9px 10px;border-radius:var(--r-sm);text-decoration:none}
+.admin-side a:hover{background:rgba(255,255,255,.08);color:#fff}
+.admin-side a.on{background:rgba(255,255,255,.14);color:#fff}
+.admin-side .spacer{flex:1}
+.admin-main{background:var(--bg)}
+.admin-top{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:var(--surface);border-bottom:1px solid var(--border)}
+.admin-top h3{font-size:18px;font-weight:700}
+.admin-body{padding:22px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.kpi .lbl{font-size:12px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:6px}
+.kpi .val{font-family:'Outfit';font-weight:800;font-size:26px;margin-top:8px}
+.kpi .delta{font-size:12px;font-weight:600;margin-top:4px}
+.kpi .delta.up{color:var(--success)}.kpi .delta.down{color:var(--danger)}
+.dash-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px}
+.panel h4{font-size:15px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.bars{display:flex;align-items:flex-end;gap:12px;height:180px;padding-top:8px}
+.bars .bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end}
+.bars .bar .b{width:62%;background:linear-gradient(180deg,var(--indigo-500),var(--indigo-700));border-radius:6px 6px 0 0}
+.bars .bar small{font-size:11px;color:var(--faint)}
+.donut{width:150px;height:150px;border-radius:50%;margin:0 auto 6px;background:conic-gradient(var(--warning) 0 22%,var(--info) 22% 45%,var(--violet-500) 45% 68%,var(--success) 68% 92%,var(--danger) 92% 100%);position:relative;display:flex;align-items:center;justify-content:center}
+.donut::after{content:"";position:absolute;width:96px;height:96px;border-radius:50%;background:var(--surface)}
+.donut .ctr{position:relative;z-index:1;text-align:center}
+.legend{display:flex;flex-direction:column;gap:7px;font-size:13px}
+.legend .lg{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.legend .lg b{margin-left:auto;color:var(--text)}
+.legend .sw{width:10px;height:10px;border-radius:3px}
+.toprow{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px}
+.toprow .rank{width:24px;height:24px;border-radius:6px;background:var(--indigo-50);color:var(--indigo-700);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center}
+.toprow .mini{width:36px;height:36px;border-radius:6px;background:linear-gradient(135deg,var(--indigo-50),var(--violet-100))}
+.toprow .bar-amt{margin-left:auto;font-weight:700;font-family:'Outfit'}
+/* status select pill */
+.sel-status{font-size:12px;font-weight:600;padding:5px 10px;border-radius:var(--pill);border:1px solid var(--border-strong);background:var(--surface);color:var(--text);cursor:pointer}
+/* drawer mock */
+.drawer-demo{display:grid;grid-template-columns:1fr 360px;gap:0}
+.drawer{background:var(--surface);border-left:1px solid var(--border);padding:20px}
+.drawer h4{font-size:16px;margin-bottom:16px}
+.note{font-size:12px;color:var(--faint);margin-top:10px}
+.flow-pills{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0 16px}
+.flow-pills .p{font-size:12px;font-weight:600;padding:5px 11px;border-radius:var(--pill);background:var(--surface-2);border:1px solid var(--border);color:var(--muted)}
+.flow-pills i{color:var(--faint)}
+/* style guide */
+.sg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.swatch{border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.swatch .c{height:62px}.swatch .t{padding:8px 10px;font-size:12px}.swatch .t b{display:block;font-size:12px}.swatch .t span{color:var(--muted);font-size:11px}
+.card-plain{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px}
+.row-wrap{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.muted{color:var(--muted)}.small{font-size:13px}
+.rev{font-size:12px;color:var(--muted);margin-top:14px}
+</style>
+</head>
+<body>
+<div class="app-nav">
+  <div class="brand"><span class="dot"></span> Aurora&nbsp;Market — Design</div>
+  <div class="tabs" id="tabs">
+    <span class="tab-group-label">Foundation</span>
+    <div class="tab active" data-s="style">Style guide</div>
+    <span class="tab-group-label">Storefront</span>
+    <div class="tab" data-s="auth">Auth</div>
+    <div class="tab" data-s="catalog">Catalog</div>
+    <div class="tab" data-s="detail">Product</div>
+    <div class="tab" data-s="cart">Cart</div>
+    <div class="tab" data-s="checkout">Checkout</div>
+    <div class="tab" data-s="confirm">Confirmation</div>
+    <div class="tab" data-s="orders">Order history</div>
+    <span class="tab-group-label">Admin</span>
+    <div class="tab" data-s="dash">Dashboard</div>
+    <div class="tab" data-s="products">Products</div>
+    <div class="tab" data-s="ordersadmin">Orders</div>
+  </div>
+</div>
+<div class="wrap">
+
+<!-- ============ STYLE GUIDE ============ -->
+<section class="screen active" data-screen="style">
+  <div class="screen-head"><h2>Style guide</h2><p>Modern-minimal, light. Indigo→violet accent on neutral surfaces. Font: Outfit (display) + Inter (text).</p></div>
+  <div class="card-plain">
+    <h4 style="margin-bottom:12px">Palette</h4>
+    <div class="sg-grid">
+      <div class="swatch"><div class="c" style="background:#1D1C4D"></div><div class="t"><b>Indigo 900</b><span>#1D1C4D · admin nav</span></div></div>
+      <div class="swatch"><div class="c" style="background:#312E81"></div><div class="t"><b>Indigo 800</b><span>#312E81 · brand</span></div></div>
+      <div class="swatch"><div class="c" style="background:#4F46E5"></div><div class="t"><b>Indigo 600</b><span>#4F46E5 · primary</span></div></div>
+      <div class="swatch"><div class="c" style="background:#7C3AED"></div><div class="t"><b>Violet 500</b><span>#7C3AED · accent</span></div></div>
+      <div class="swatch"><div class="c" style="background:#10B981"></div><div class="t"><b>Success</b><span>#10B981</span></div></div>
+      <div class="swatch"><div class="c" style="background:#F59E0B"></div><div class="t"><b>Warning</b><span>#F59E0B</span></div></div>
+      <div class="swatch"><div class="c" style="background:#EF4444"></div><div class="t"><b>Danger</b><span>#EF4444</span></div></div>
+      <div class="swatch"><div class="c" style="background:#F6F7FB;border-bottom:1px solid #E8EAF0"></div><div class="t"><b>Canvas</b><span>#F6F7FB</span></div></div>
+    </div>
+  </div>
+  <div class="card-plain">
+    <h4 style="margin-bottom:12px">Typography</h4>
+    <div style="font-family:'Outfit';font-weight:800;font-size:30px">Aa Display — Outfit 800</div>
+    <div style="font-family:'Outfit';font-weight:700;font-size:20px;margin-top:6px">Section heading — Outfit 700</div>
+    <p class="small" style="margin-top:6px">Body copy uses Inter at 14–16px with 1.55 line-height for comfortable reading across long catalog and admin tables. <span class="muted">Muted secondary text sits at #6B7280.</span></p>
+  </div>
+  <div class="card-plain">
+    <h4 style="margin-bottom:12px">Components</h4>
+    <div class="row-wrap" style="margin-bottom:14px">
+      <button class="btn btn-primary">Add to cart</button>
+      <button class="btn btn-ghost">Secondary</button>
+      <button class="btn btn-danger">Delete</button>
+      <button class="btn btn-primary btn-sm">Small</button>
+    </div>
+    <div class="row-wrap" style="margin-bottom:14px">
+      <span class="chip">Category</span>
+      <span class="status st-pending">Pending</span>
+      <span class="status st-processing">Processing</span>
+      <span class="status st-shipped">Shipped</span>
+      <span class="status st-delivered">Delivered</span>
+      <span class="status st-cancelled">Cancelled</span>
+    </div>
+    <div class="row-wrap" style="max-width:420px">
+      <input class="input" placeholder="Text input — focus state has indigo ring" />
+    </div>
+  </div>
+  <p class="rev">Order status colors are consistent everywhere: amber = pending, blue = processing, violet = shipped, green = delivered, red = cancelled.</p>
+</section>
+
+<!-- ============ AUTH ============ -->
+<section class="screen" data-screen="auth">
+  <div class="screen-head"><h2>Sign in / Sign up</h2><p>Shared auth for customers; admins use the same form and are routed by role after login.</p></div>
+  <div class="frame">
+    <div class="frame-bar"><div class="dots"><i></i><i></i><i></i></div><div class="url">aurora.market/login</div></div>
+    <div class="auth-wrap">
+      <div class="auth-art">
+        <div class="brand" style="color:#fff;font-family:'Outfit';font-weight:800;font-size:18px;display:flex;gap:8px;align-items:center"><span style="width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,.2);display:block"></span> Aurora Market</div>
+        <div><h2>Shop smarter.<br/>Everything in one place.</h2><p>Sign in to sync your cart across devices and track your orders end to end.</p></div>
+        <p style="color:rgba(255,255,255,.6);font-size:12px">Secure checkout · JWT auth · Your data stays yours</p>
+      </div>
+      <div class="auth-form">
+        <div class="seg"><button class="on">Sign in</button><button>Create account</button></div>
+        <div class="field"><label>Email</label><input class="input" placeholder="you@example.com" /></div>
+        <div class="field"><label>Password</label><input class="input" type="password" placeholder="••••••••" /></div>
+        <div class="row-wrap" style="justify-content:space-between;margin-bottom:16px"><label class="check"><input type="checkbox" checked/> Remember me</label><a href="#" style="font-size:13px;color:var(--indigo-600);text-decoration:none;font-weight:600">Forgot password?</a></div>
+        <button class="btn btn-primary btn-block">Sign in</button>
+        <p class="note" style="text-align:center;margin-top:14px">Passwords hashed with bcrypt · validated client + server side</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CATALOG ============ -->
+<section class="screen" data-screen="catalog">
+  <div class="screen-head"><h2>Product catalog</h2><p>Search, category + price filters, sort, pagination, and a personalized recommendation strip.</p></div>
+  <div class="frame">
+    <div class="store-top">
+      <div class="logo"><span class="dot"></span> Aurora</div>
+      <nav><a class="on">Shop</a><a>Categories</a><a>Deals</a></nav>
+      <div class="searchbar">🔍 Search products…</div>
+      <div class="icon-btn">♡</div>
+      <div class="icon-btn">🛒<span class="badge">3</span></div>
+      <div class="icon-btn">👤</div>
+    </div>
+    <div style="padding:22px 22px 0">
+      <div class="section-title">✨ Recommended for you</div>
+      <div class="reco-strip">
+        <div class="pcard"><div class="thumb">🎧</div><div class="body"><div class="name">Studio Headphones</div><div class="meta"><span class="price">$129</span><span class="stock">In stock</span></div></div></div>
+        <div class="pcard"><div class="thumb">⌚</div><div class="body"><div class="name">Smart Watch S2</div><div class="meta"><span class="price">$199</span><span class="stock">In stock</span></div></div></div>
+        <div class="pcard"><div class="thumb">📷</div><div class="body"><div class="name">Mirrorless Cam</div><div class="meta"><span class="price">$749</span><span class="stock low">2 left</span></div></div></div>
+        <div class="pcard"><div class="thumb">🔌</div><div class="body"><div class="name">USB-C Hub</div><div class="meta"><span class="price">$39</span><span class="stock">In stock</span></div></div></div>
+      </div>
+    </div>
+    <div class="catalog">
+      <aside class="filters">
+        <div class="filt-card">
+          <h4>Category</h4>
+          <label class="check"><input type="checkbox" checked/> All</label>
+          <label class="check"><input type="checkbox"/> Audio</label>
+          <label class="check"><input type="checkbox"/> Wearables</label>
+          <label class="check"><input type="checkbox"/> Cameras</label>
+          <label class="check"><input type="checkbox"/> Accessories</label>
+        </div>
+        <div class="filt-card">
+          <h4>Price range</h4>
+          <div class="range-row"><input class="input" placeholder="$0" style="padding:8px"/><span class="muted">–</span><input class="input" placeholder="$999" style="padding:8px"/></div>
+          <button class="btn btn-ghost btn-sm btn-block" style="margin-top:10px">Apply</button>
+        </div>
+      </aside>
+      <div>
+        <div class="toolbar">
+          <span class="count">Showing 1–9 of 64 products</span>
+          <select class="input" style="width:auto"><option>Sort: Newest</option><option>Price: Low → High</option><option>Price: High → Low</option></select>
+        </div>
+        <div class="grid">
+          <div class="pcard"><div class="thumb">🎧<span class="chip cat">Audio</span></div><div class="body"><div class="name">Studio Headphones Pro</div><div class="meta"><span class="price">$129.00</span><span class="stock">24 in stock</span></div></div></div>
+          <div class="pcard"><div class="thumb">⌚<span class="chip cat">Wearables</span></div><div class="body"><div class="name">Smart Watch Series 2</div><div class="meta"><span class="price">$199.00</span><span class="stock low">2 left</span></div></div></div>
+          <div class="pcard"><div class="thumb">📷<span class="chip cat">Cameras</span></div><div class="body"><div class="name">Mirrorless Camera X</div><div class="meta"><span class="price">$749.00</span><span class="stock">11 in stock</span></div></div></div>
+          <div class="pcard"><div class="thumb">🔊<span class="chip cat">Audio</span></div><div class="body"><div class="name">Portable Speaker Mini</div><div class="meta"><span class="price">$59.00</span><span class="stock">40 in stock</span></div></div></div>
+          <div class="pcard"><div class="thumb">⌨️<span class="chip cat">Accessories</span></div><div class="body"><div class="name">Mechanical Keyboard</div><div class="meta"><span class="price">$89.00</span><span class="stock">8 in stock</span></div></div></div>
+          <div class="pcard"><div class="thumb">🖱️<span class="chip cat">Accessories</span></div><div class="body"><div class="name">Wireless Mouse</div><div class="meta"><span class="price">$29.00</span><span class="stock">60 in stock</span></div></div></div>
+          <div class="pcard"><div class="thumb">📱<span class="chip cat">Wearables</span></div><div class="body"><div class="name">Fitness Band Lite</div><div class="meta"><span class="price">$49.00</span><span class="stock">0 — sold out</span></div></div></div>
+          <div class="pcard"><div class="thumb">🔌<span class="chip cat">Accessories</span></div><div class="body"><div class="name">USB-C 7-in-1 Hub</div><div class="meta"><span class="price">$39.00</span><span class="stock">33 in stock</span></div></div></div>
+          <div class="pcard"><div class="thumb">🎮<span class="chip cat">Accessories</span></div><div class="body"><div class="name">Game Controller Pro</div><div class="meta"><span class="price">$69.00</span><span class="stock">14 in stock</span></div></div></div>
+        </div>
+        <div class="pager"><span class="pg">‹</span><span class="pg on">1</span><span class="pg">2</span><span class="pg">3</span><span class="pg">…</span><span class="pg">8</span><span class="pg">›</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRODUCT DETAIL ============ -->
+<section class="screen" data-screen="detail">
+  <div class="screen-head"><h2>Product detail</h2><p>Full info, quantity selector with stock guard, add-to-cart, and a "You may also like" suggestion row.</p></div>
+  <div class="frame">
+    <div class="frame-bar"><div class="dots"><i></i><i></i><i></i></div><div class="url">aurora.market/product/studio-headphones-pro</div></div>
+    <div class="detail">
+      <div class="gallery">🎧</div>
+      <div>
+        <span class="chip">Audio</span>
+        <h2 style="font-size:26px;margin:12px 0 6px">Studio Headphones Pro</h2>
+        <div class="price" style="font-size:28px">$129.00</div>
+        <p class="muted small" style="margin:14px 0">Over-ear active-noise-cancelling headphones with 40-hour battery, plush memory-foam cups, and studio-grade drivers. Bluetooth 5.3 with multipoint pairing.</p>
+        <div class="row-wrap" style="margin:8px 0 4px"><span class="status st-delivered">24 in stock</span></div>
+        <div class="row-wrap" style="margin:18px 0">
+          <div class="qty"><button>−</button><span>1</span><button>+</button></div>
+          <button class="btn btn-primary">🛒 Add to cart</button>
+          <button class="btn btn-ghost">♡ Save</button>
+        </div>
+        <div class="card-plain" style="margin-top:10px;background:var(--surface-2)">
+          <div class="small"><b>Free shipping</b> over $50 · 30-day returns · 2-year warranty</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:0 24px 26px">
+      <div class="section-title">You may also like</div>
+      <div class="reco-strip">
+        <div class="pcard"><div class="thumb">🔊</div><div class="body"><div class="name">Portable Speaker Mini</div><div class="meta"><span class="price">$59</span><span class="stock">In stock</span></div></div></div>
+        <div class="pcard"><div class="thumb">🎤</div><div class="body"><div class="name">USB Condenser Mic</div><div class="meta"><span class="price">$99</span><span class="stock">In stock</span></div></div></div>
+        <div class="pcard"><div class="thumb">🎧</div><div class="body"><div class="name">Earbuds Air</div><div class="meta"><span class="price">$79</span><span class="stock">In stock</span></div></div></div>
+        <div class="pcard"><div class="thumb">🔌</div><div class="body"><div class="name">USB-C Hub</div><div class="meta"><span class="price">$39</span><span class="stock">In stock</span></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CART ============ -->
+<section class="screen" data-screen="cart">
+  <div class="screen-head"><h2>Shopping cart</h2><p>Update quantities, remove items, line totals + order total. Persists per logged-in user.</p></div>
+  <div class="frame">
+    <div class="frame-bar"><div class="dots"><i></i><i></i><i></i></div><div class="url">aurora.market/cart</div></div>
+    <div class="two-col">
+      <div>
+        <table class="tbl">
+          <thead><tr><th>Product</th><th>Price</th><th>Qty</th><th>Total</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><div class="line-prod"><div class="mini"></div><div><div style="font-weight:600">Studio Headphones Pro</div><div class="muted small">Audio</div></div></div></td><td>$129.00</td><td><div class="qty"><button>−</button><span>1</span><button>+</button></div></td><td><b>$129.00</b></td><td><button class="icon-btn" style="color:var(--danger)">🗑</button></td></tr>
+            <tr><td><div class="line-prod"><div class="mini"></div><div><div style="font-weight:600">USB-C 7-in-1 Hub</div><div class="muted small">Accessories</div></div></div></td><td>$39.00</td><td><div class="qty"><button>−</button><span>2</span><button>+</button></div></td><td><b>$78.00</b></td><td><button class="icon-btn" style="color:var(--danger)">🗑</button></td></tr>
+            <tr><td><div class="line-prod"><div class="mini"></div><div><div style="font-weight:600">Wireless Mouse</div><div class="muted small">Accessories</div></div></div></td><td>$29.00</td><td><div class="qty"><button>−</button><span>1</span><button>+</button></div></td><td><b>$29.00</b></td><td><button class="icon-btn" style="color:var(--danger)">🗑</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="summary">
+        <h4>Order summary</h4>
+        <div class="row"><span>Subtotal</span><span>$236.00</span></div>
+        <div class="row"><span>Shipping</span><span>Free</span></div>
+        <div class="row"><span>Tax (est.)</span><span>$18.88</span></div>
+        <div class="row total"><span>Total</span><span>$254.88</span></div>
+        <button class="btn btn-primary btn-block" style="margin-top:16px">Checkout →</button>
+        <button class="btn btn-ghost btn-block" style="margin-top:8px">Continue shopping</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CHECKOUT ============ -->
+<section class="screen" data-screen="checkout">
+  <div class="screen-head"><h2>Checkout</h2><p>Shipping details + mock/Stripe-test payment, with the order summary alongside.</p></div>
+  <div class="frame">
+    <div class="frame-bar"><div class="dots"><i></i><i></i><i></i></div><div class="url">aurora.market/checkout</div></div>
+    <div class="two-col">
+      <div>
+        <div class="card-plain">
+          <h4 style="margin-bottom:14px">Shipping address</h4>
+          <div class="field"><label>Full name</label><input class="input" placeholder="Jane Customer"/></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="field"><label>City</label><input class="input" placeholder="London"/></div><div class="field"><label>Postcode</label><input class="input" placeholder="EC1A 1BB"/></div></div>
+          <div class="field"><label>Address</label><input class="input" placeholder="221B Baker Street"/></div>
+        </div>
+        <div class="card-plain" style="margin-bottom:0">
+          <h4 style="margin-bottom:6px">Payment <span class="chip" style="margin-left:6px">Test mode</span></h4>
+          <p class="note" style="margin:0 0 12px">Mocked / Stripe test — no real charge. Use card 4242 4242 4242 4242.</p>
+          <div class="field"><label>Card number</label><input class="input" placeholder="4242 4242 4242 4242"/></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="field"><label>Expiry</label><input class="input" placeholder="12 / 30"/></div><div class="field"><label>CVC</label><input class="input" placeholder="123"/></div></div>
+        </div>
+      </div>
+      <div class="summary">
+        <h4>Your order</h4>
+        <div class="row"><span>Studio Headphones Pro ×1</span><span>$129.00</span></div>
+        <div class="row"><span>USB-C Hub ×2</span><span>$78.00</span></div>
+        <div class="row"><span>Wireless Mouse ×1</span><span>$29.00</span></div>
+        <div class="row"><span>Tax</span><span>$18.88</span></div>
+        <div class="row total"><span>Total</span><span>$254.88</span></div>
+        <button class="btn btn-primary btn-block" style="margin-top:16px">Pay $254.88</button>
+        <p class="note" style="text-align:center;margin-top:10px">🔒 Stock re-checked at order time</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONFIRMATION ============ -->
+<section class="screen" data-screen="confirm">
+  <div class="screen-head"><h2>Order confirmation</h2><p>Shown after a successful (mock) payment and order creation.</p></div>
+  <div class="frame">
+    <div class="frame-bar"><div class="dots"><i></i><i></i><i></i></div><div class="url">aurora.market/orders/AM-10428</div></div>
+    <div class="confirm">
+      <div class="tick">✓</div>
+      <h2 style="font-size:24px">Thank you — your order is confirmed</h2>
+      <p class="muted" style="margin-top:6px">Order <b>#AM-10428</b> · a receipt was sent to jane@example.com</p>
+      <div class="summary" style="max-width:420px;margin:22px auto 0;text-align:left">
+        <div class="row"><span>Items (4)</span><span>$236.00</span></div>
+        <div class="row"><span>Tax</span><span>$18.88</span></div>
+        <div class="row total"><span>Paid</span><span>$254.88</span></div>
+        <div class="row" style="padding-top:12px"><span>Status</span><span class="status st-pending">Pending</span></div>
+      </div>
+      <div class="row-wrap" style="justify-content:center;margin-top:22px"><button class="btn btn-primary">View order</button><button class="btn btn-ghost">Continue shopping</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ORDER HISTORY ============ -->
+<section class="screen" data-screen="orders">
+  <div class="screen-head"><h2>Order history</h2><p>A customer sees only their own orders and each order's current status.</p></div>
+  <div class="frame">
+    <div class="frame-bar"><div class="dots"><i></i><i></i><i></i></div><div class="url">aurora.market/account/orders</div></div>
+    <div style="padding:22px">
+      <table class="tbl">
+        <thead><tr><th>Order</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><b>#AM-10428</b></td><td>29 Jun 2026</td><td>4</td><td>$254.88</td><td><span class="status st-pending">Pending</span></td><td><a href="#" style="color:var(--indigo-600);font-weight:600;text-decoration:none">View</a></td></tr>
+          <tr><td><b>#AM-10391</b></td><td>21 Jun 2026</td><td>2</td><td>$148.00</td><td><span class="status st-shipped">Shipped</span></td><td><a href="#" style="color:var(--indigo-600);font-weight:600;text-decoration:none">View</a></td></tr>
+          <tr><td><b>#AM-10355</b></td><td>09 Jun 2026</td><td>1</td><td>$749.00</td><td><span class="status st-delivered">Delivered</span></td><td><a href="#" style="color:var(--indigo-600);font-weight:600;text-decoration:none">View</a></td></tr>
+          <tr><td><b>#AM-10310</b></td><td>30 May 2026</td><td>3</td><td>$97.00</td><td><span class="status st-cancelled">Cancelled</span></td><td><a href="#" style="color:var(--indigo-600);font-weight:600;text-decoration:none">View</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ADMIN DASHBOARD ============ -->
+<section class="screen" data-screen="dash">
+  <div class="screen-head"><h2>Admin · Dashboard</h2><p>KPIs, sales chart, order-status breakdown, and top-selling products. Admin-only.</p></div>
+  <div class="frame">
+    <div class="admin">
+      <aside class="admin-side">
+        <div class="a-brand"><span class="dot"></span> Aurora Admin</div>
+        <a class="on">📊 Dashboard</a>
+        <a>📦 Products</a>
+        <a>🧾 Orders</a>
+        <a>👥 Customers</a>
+        <div class="spacer"></div>
+        <a>⚙️ Settings</a>
+        <a>↩ Sign out</a>
+      </aside>
+      <div class="admin-main">
+        <div class="admin-top"><h3>Dashboard</h3><div class="row-wrap"><select class="input" style="width:auto"><option>Last 30 days</option><option>Last 7 days</option></select><div class="icon-btn">🔔</div></div></div>
+        <div class="admin-body">
+          <div class="kpis">
+            <div class="kpi"><div class="lbl">💰 Total sales</div><div class="val">$48,920</div><div class="delta up">▲ 12.4% vs last period</div></div>
+            <div class="kpi"><div class="lbl">🧾 Orders</div><div class="val">312</div><div class="delta up">▲ 6.1%</div></div>
+            <div class="kpi"><div class="lbl">📦 Avg order</div><div class="val">$156.80</div><div class="delta down">▼ 2.0%</div></div>
+            <div class="kpi"><div class="lbl">👥 Customers</div><div class="val">1,204</div><div class="delta up">▲ 18 new</div></div>
+          </div>
+          <div class="dash-grid">
+            <div class="panel">
+              <h4>Sales over time <span class="chip">30 days</span></h4>
+              <div class="bars">
+                <div class="bar"><div class="b" style="height:42%"></div><small>W1</small></div>
+                <div class="bar"><div class="b" style="height:58%"></div><small>W2</small></div>
+                <div class="bar"><div class="b" style="height:50%"></div><small>W3</small></div>
+                <div class="bar"><div class="b" style="height:74%"></div><small>W4</small></div>
+                <div class="bar"><div class="b" style="height:66%"></div><small>W5</small></div>
+                <div class="bar"><div class="b" style="height:88%"></div><small>W6</small></div>
+              </div>
+            </div>
+            <div class="panel">
+              <h4>Orders by status</h4>
+              <div class="donut"><div class="ctr"><div style="font-family:'Outfit';font-weight:800;font-size:22px">312</div><div class="muted" style="font-size:11px">orders</div></div></div>
+              <div class="legend">
+                <div class="lg"><span class="sw" style="background:#F59E0B"></span> Pending <b>69</b></div>
+                <div class="lg"><span class="sw" style="background:#3B82F6"></span> Processing <b>72</b></div>
+                <div class="lg"><span class="sw" style="background:#7C3AED"></span> Shipped <b>71</b></div>
+                <div class="lg"><span class="sw" style="background:#10B981"></span> Delivered <b>75</b></div>
+                <div class="lg"><span class="sw" style="background:#EF4444"></span> Cancelled <b>25</b></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel" style="margin-top:16px">
+            <h4>Top-selling products</h4>
+            <div class="toprow"><span class="rank">1</span><div class="mini"></div><div><div style="font-weight:600">Studio Headphones Pro</div><div class="muted small">Audio · 184 sold</div></div><span class="bar-amt">$23,736</span></div>
+            <div class="toprow"><span class="rank">2</span><div class="mini"></div><div><div style="font-weight:600">Smart Watch Series 2</div><div class="muted small">Wearables · 96 sold</div></div><span class="bar-amt">$19,104</span></div>
+            <div class="toprow"><span class="rank">3</span><div class="mini"></div><div><div style="font-weight:600">Mirrorless Camera X</div><div class="muted small">Cameras · 22 sold</div></div><span class="bar-amt">$16,478</span></div>
+            <div class="toprow" style="border-bottom:none"><span class="rank">4</span><div class="mini"></div><div><div style="font-weight:600">USB-C 7-in-1 Hub</div><div class="muted small">Accessories · 210 sold</div></div><span class="bar-amt">$8,190</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ADMIN PRODUCTS ============ -->
+<section class="screen" data-screen="products">
+  <div class="screen-head"><h2>Admin · Product management</h2><p>List with thumbnails, create/edit in a side drawer, delete with confirm. Image via URL or upload.</p></div>
+  <div class="frame">
+    <div class="admin">
+      <aside class="admin-side">
+        <div class="a-brand"><span class="dot"></span> Aurora Admin</div>
+        <a>📊 Dashboard</a><a class="on">📦 Products</a><a>🧾 Orders</a><a>👥 Customers</a>
+        <div class="spacer"></div><a>⚙️ Settings</a><a>↩ Sign out</a>
+      </aside>
+      <div class="admin-main">
+        <div class="admin-top"><h3>Products</h3><button class="btn btn-primary btn-sm">＋ Add product</button></div>
+        <div class="drawer-demo">
+          <div class="admin-body">
+            <div class="row-wrap" style="margin-bottom:14px"><div class="searchbar" style="max-width:260px">🔍 Search products…</div><select class="input" style="width:auto"><option>All categories</option></select></div>
+            <div class="panel" style="padding:0">
+              <table class="tbl">
+                <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th></th></tr></thead>
+                <tbody>
+                  <tr><td><div class="line-prod"><div class="mini"></div><div style="font-weight:600">Studio Headphones Pro</div></div></td><td><span class="chip">Audio</span></td><td>$129.00</td><td>24</td><td><span class="status st-delivered">Active</span></td><td><button class="icon-btn btn-sm">✏️</button> <button class="icon-btn" style="color:var(--danger)">🗑</button></td></tr>
+                  <tr><td><div class="line-prod"><div class="mini"></div><div style="font-weight:600">Smart Watch Series 2</div></div></td><td><span class="chip">Wearables</span></td><td>$199.00</td><td>2</td><td><span class="status st-pending">Low stock</span></td><td><button class="icon-btn btn-sm">✏️</button> <button class="icon-btn" style="color:var(--danger)">🗑</button></td></tr>
+                  <tr><td><div class="line-prod"><div class="mini"></div><div style="font-weight:600">Fitness Band Lite</div></div></td><td><span class="chip">Wearables</span></td><td>$49.00</td><td>0</td><td><span class="status st-cancelled">Sold out</span></td><td><button class="icon-btn btn-sm">✏️</button> <button class="icon-btn" style="color:var(--danger)">🗑</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="drawer">
+            <h4>Edit product</h4>
+            <div style="aspect-ratio:16/10;border-radius:var(--r);background:linear-gradient(135deg,var(--indigo-50),var(--violet-100));display:flex;align-items:center;justify-content:center;color:var(--indigo-200);font-size:34px;margin-bottom:8px">🎧</div>
+            <button class="btn btn-ghost btn-sm btn-block" style="margin-bottom:14px">⬆ Upload / paste image URL</button>
+            <div class="field"><label>Name</label><input class="input" value="Studio Headphones Pro"/></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="field"><label>Price</label><input class="input" value="129.00"/></div><div class="field"><label>Stock</label><input class="input" value="24"/></div></div>
+            <div class="field"><label>Category</label><select class="input"><option>Audio</option><option>Wearables</option></select></div>
+            <div class="field"><label>Description</label><textarea class="input" rows="3">Over-ear ANC headphones…</textarea></div>
+            <button class="btn btn-primary btn-block">Save product</button>
+            <p class="note">Validated on client + server; price ≥ 0, stock integer ≥ 0.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ADMIN ORDERS ============ -->
+<section class="screen" data-screen="ordersadmin">
+  <div class="screen-head"><h2>Admin · Order management</h2><p>All orders, with status advanced through its lifecycle. Cancelled is a separate path.</p></div>
+  <div class="frame">
+    <div class="admin">
+      <aside class="admin-side">
+        <div class="a-brand"><span class="dot"></span> Aurora Admin</div>
+        <a>📊 Dashboard</a><a>📦 Products</a><a class="on">🧾 Orders</a><a>👥 Customers</a>
+        <div class="spacer"></div><a>⚙️ Settings</a><a>↩ Sign out</a>
+      </aside>
+      <div class="admin-main">
+        <div class="admin-top"><h3>Orders</h3><div class="row-wrap"><div class="searchbar" style="max-width:220px">🔍 Search order / customer</div><select class="input" style="width:auto"><option>All statuses</option></select></div></div>
+        <div class="admin-body">
+          <div class="flow-pills">
+            <span class="p" style="color:#B45309;background:var(--warning-bg)">Pending</span><i>→</i>
+            <span class="p" style="color:#1D4ED8;background:var(--info-bg)">Processing</span><i>→</i>
+            <span class="p" style="color:#6D28D9;background:var(--violet-100)">Shipped</span><i>→</i>
+            <span class="p" style="color:#047857;background:var(--success-bg)">Delivered</span>
+            <span style="margin:0 6px;color:var(--faint)">·</span>
+            <span class="p" style="color:#B91C1C;background:var(--danger-bg)">Cancelled</span>
+          </div>
+          <div class="panel" style="padding:0">
+            <table class="tbl">
+              <thead><tr><th>Order</th><th>Customer</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th><th>Update</th></tr></thead>
+              <tbody>
+                <tr><td><b>#AM-10428</b></td><td>Jane Customer</td><td>29 Jun</td><td>4</td><td>$254.88</td><td><span class="status st-pending">Pending</span></td><td><select class="sel-status"><option>Pending</option><option>Processing</option><option>Cancelled</option></select></td></tr>
+                <tr><td><b>#AM-10427</b></td><td>Omar Khan</td><td>29 Jun</td><td>1</td><td>$749.00</td><td><span class="status st-processing">Processing</span></td><td><select class="sel-status"><option>Processing</option><option>Shipped</option><option>Cancelled</option></select></td></tr>
+                <tr><td><b>#AM-10391</b></td><td>Lia Wong</td><td>21 Jun</td><td>2</td><td>$148.00</td><td><span class="status st-shipped">Shipped</span></td><td><select class="sel-status"><option>Shipped</option><option>Delivered</option></select></td></tr>
+                <tr><td><b>#AM-10355</b></td><td>Sam Patel</td><td>09 Jun</td><td>1</td><td>$749.00</td><td><span class="status st-delivered">Delivered</span></td><td><span class="muted small">— complete</span></td></tr>
+                <tr><td><b>#AM-10310</b></td><td>Mara Diaz</td><td>30 May</td><td>3</td><td>$97.00</td><td><span class="status st-cancelled">Cancelled</span></td><td><span class="muted small">— closed</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+<script>
+const tabs=document.querySelectorAll('.tab');
+const screens=document.querySelectorAll('.screen');
+tabs.forEach(t=>t.addEventListener('click',()=>{
+  const s=t.dataset.s;
+  tabs.forEach(x=>x.classList.remove('active'));t.classList.add('active');
+  screens.forEach(sc=>sc.classList.toggle('active',sc.dataset.screen===s));
+  window.scrollTo({top:0,behavior:'smooth'});
+}));
+</script>
+</body>
+</html>

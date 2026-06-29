@@ -42,6 +42,9 @@ export class Product {
   @Prop({ trim: true, default: 'general', index: true })
   category: string;
 
+  @Prop({ trim: true, default: '' })
+  imageUrl: string;
+
   @Prop({ default: true })
   isActive: boolean;
 

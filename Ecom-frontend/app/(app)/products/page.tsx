@@ -1,5 +1,5 @@
-import { ProductsList } from "@sections/products/products-list";
+import { StoreCatalog } from "@sections/store/store-catalog";
 
 export default function ProductsPage() {
-  return <ProductsList />;
+  return <StoreCatalog />;
 }

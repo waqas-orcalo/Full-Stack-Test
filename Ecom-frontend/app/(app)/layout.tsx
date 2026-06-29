@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
-import { DashboardLayout } from "@layouts/dashboard";
+import { StoreLayout } from "@layouts/store";
 
 /**
- * Route-group layout: every page under app/(app) is wrapped in the
- * dashboard shell (sidebar + top bar). Mirrors COSMONYX-FE-001 app/(app).
+ * Public storefront group. Browsing is open to everyone; auth is enforced only
+ * on purchase actions and on the separate /admin area.
  */
-export default function AppGroupLayout({ children }: { children: ReactNode }) {
-  return <DashboardLayout>{children}</DashboardLayout>;
+export default function StoreGroupLayout({ children }: { children: ReactNode }) {
+  return <StoreLayout>{children}</StoreLayout>;
 }

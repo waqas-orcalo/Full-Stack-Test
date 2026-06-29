@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  Avatar,
   Card,
   Chip,
   IconButton,
@@ -26,6 +27,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import toast from "react-hot-toast";
 
 import { paths } from "@root/path";
+import { resolveImageUrl } from "@root/config";
 import {
   useDeleteProductMutation,
   useGetProductsQuery,
@@ -77,7 +79,7 @@ export default function ProductsList() {
         action={
           <Button
             component={Link}
-            href={paths.products.create}
+            href={paths.admin.createProduct}
             variant="contained"
             startIcon={<AddIcon />}
           >
@@ -117,7 +119,7 @@ export default function ProductsList() {
             action={
               <Button
                 component={Link}
-                href={paths.products.create}
+                href={paths.admin.createProduct}
                 variant="contained"
                 startIcon={<AddIcon />}
               >
@@ -143,7 +145,18 @@ export default function ProductsList() {
                 <TableBody sx={{ opacity: isFetching ? 0.6 : 1 }}>
                   {products.map((product) => (
                     <TableRow key={product.id} hover>
-                      <TableCell>{product.name}</TableCell>
+                      <TableCell>
+                        <Stack direction="row" alignItems="center" gap={1.5}>
+                          <Avatar
+                            variant="rounded"
+                            src={resolveImageUrl(product.imageUrl) || undefined}
+                            sx={{ width: 36, height: 36, bgcolor: "action.hover" }}
+                          >
+                            {product.name[0]}
+                          </Avatar>
+                          {product.name}
+                        </Stack>
+                      </TableCell>
                       <TableCell>{product.sku}</TableCell>
                       <TableCell>{product.category}</TableCell>
                       <TableCell align="right">
@@ -163,7 +176,7 @@ export default function ProductsList() {
                           <IconButton
                             size="small"
                             onClick={() =>
-                              router.push(paths.products.edit(product.id))
+                              router.push(paths.admin.editProduct(product.id))
                             }
                           >
                             <EditOutlinedIcon fontSize="small" />
