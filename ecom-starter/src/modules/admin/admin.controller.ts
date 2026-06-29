@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiResponseDto } from '../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -19,6 +19,12 @@ export class AdminController {
   @ApiOperation({ summary: 'List all orders (admin)' })
   async orders() {
     return ApiResponseDto.of(await this.adminService.findAllOrders(), 'All orders');
+  }
+
+  @Get('orders/:id')
+  @ApiOperation({ summary: 'Get a single order with customer info (admin)' })
+  async order(@Param('id') id: string) {
+    return ApiResponseDto.of(await this.adminService.findOrder(id), 'Order');
   }
 
   @Get('customers')

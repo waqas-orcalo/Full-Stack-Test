@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Box,
-  Card,
-  Grid,
-  MenuItem,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Card, Grid, Stack, Typography } from "@mui/material";
 import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
@@ -91,16 +83,7 @@ export default function AdminDashboard() {
 
   return (
     <>
-      <PageHeader
-        title="Dashboard"
-        subtitle="Store overview"
-        action={
-          <TextField select size="small" defaultValue="30" sx={{ width: 150 }}>
-            <MenuItem value="30">Last 30 days</MenuItem>
-            <MenuItem value="7">Last 7 days</MenuItem>
-          </TextField>
-        }
-      />
+      <PageHeader title="Dashboard" subtitle="Store overview" />
 
       {/* KPI cards */}
       <Grid container spacing={2} mb={2}>

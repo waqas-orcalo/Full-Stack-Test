@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Card,
   Chip,
@@ -21,7 +22,8 @@ import {
 import { orderStatusChip } from "@utils/order-status";
 import { ALLOWED_TRANSITIONS } from "@root/types/order";
 import type { OrderStatus } from "@root/types/order";
-import { ApiErrorState, EmptyState, Loading, PageHeader } from "@components/index";
+import { paths } from "@root/path";
+import { ApiErrorState, Button, EmptyState, Loading, PageHeader } from "@components/index";
 
 export default function AdminOrders() {
   const { data, isLoading, isError } = useGetAllOrdersQuery();
@@ -58,6 +60,7 @@ export default function AdminOrders() {
                 <TableCell>Date</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Update</TableCell>
+                <TableCell />
               </TableRow>
             </TableHead>
             <TableBody>
@@ -66,7 +69,15 @@ export default function AdminOrders() {
                 const nextOptions = ALLOWED_TRANSITIONS[order.status];
                 return (
                   <TableRow key={order.id} hover>
-                    <TableCell sx={{ fontWeight: 600 }}>#{order.id.slice(-8)}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>
+                      <Typography
+                        component={Link}
+                        href={paths.admin.viewOrder(order.id)}
+                        sx={{ fontWeight: 600, color: "primary.dark", textDecoration: "none" }}
+                      >
+                        #{order.id.slice(-8)}
+                      </Typography>
+                    </TableCell>
                     <TableCell>
                       <Typography variant="body2">{order.user?.name ?? "—"}</Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -108,6 +119,16 @@ export default function AdminOrders() {
                           ))}
                         </Select>
                       )}
+                    </TableCell>
+                    <TableCell align="right">
+                      <Button
+                        component={Link}
+                        href={paths.admin.viewOrder(order.id)}
+                        size="small"
+                        variant="outlined"
+                      >
+                        View
+                      </Button>
                     </TableCell>
                   </TableRow>
                 );

@@ -28,6 +28,10 @@ export const ordersAPI = baseAPI.injectEndpoints({
       query: () => ({ url: "/admin/orders", method: "GET" }),
       providesTags: [ORDERS],
     }),
+    getAdminOrderById: builder.query<ApiResponse<AdminOrder>, string>({
+      query: (id) => ({ url: `/admin/orders/${id}`, method: "GET" }),
+      providesTags: [ORDERS],
+    }),
     updateOrderStatus: builder.mutation<
       ApiResponse<Order>,
       { id: string; status: OrderStatus }
@@ -47,5 +51,6 @@ export const {
   useGetOrdersQuery,
   useGetOrderByIdQuery,
   useGetAllOrdersQuery,
+  useGetAdminOrderByIdQuery,
   useUpdateOrderStatusMutation,
 } = ordersAPI;

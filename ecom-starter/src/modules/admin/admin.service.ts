@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, isValidObjectId } from 'mongoose';
 import { Order, OrderDocument, OrderStatus } from '../orders/schemas/order.schema';
 import { User, UserDocument, UserRole } from '../users/schemas/user.schema';
 import { Product, ProductDocument } from '../products/schemas/product.schema';
@@ -36,6 +36,14 @@ export class AdminService {
 
   async findAllOrders(): Promise<Order[]> {
     return this.orderModel.find().populate('user', 'email name').sort({ createdAt: -1 }).exec();
+  }
+
+  /** Any order with customer info (admin — no ownership restriction). */
+  async findOrder(id: string): Promise<Order> {
+    if (!isValidObjectId(id)) throw new NotFoundException('Order not found');
+    const order = await this.orderModel.findById(id).populate('user', 'email name').exec();
+    if (!order) throw new NotFoundException('Order not found');
+    return order;
   }
 
   /** Customers with their order count and total spent. */
