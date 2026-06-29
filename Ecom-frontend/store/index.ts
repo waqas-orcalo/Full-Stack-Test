@@ -12,6 +12,7 @@ import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
 import { baseAPI } from "@services/base-api";
 import { authReducer } from "@slices/auth";
+import { uiReducer } from "@slices/ui";
 
 // Noop storage for SSR so redux-persist does not touch `window` on the server.
 const createNoopStorage = () => ({
@@ -28,13 +29,14 @@ const storage =
 const persistConfig = {
   key: "root",
   version: 1,
-  whitelist: ["auth"],
+  whitelist: ["auth", "ui"],
   storage,
 };
 
 const appReducer = combineReducers({
   [baseAPI.reducerPath]: baseAPI.reducer,
   auth: authReducer,
+  ui: uiReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, appReducer);

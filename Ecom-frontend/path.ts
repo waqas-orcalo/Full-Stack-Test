@@ -22,5 +22,6 @@ export const paths = {
     orders: "/admin/orders",
     viewOrder: (id: string | number) => `/admin/orders/${id}`,
     customers: "/admin/customers",
+    settings: "/admin/settings",
   },
 };

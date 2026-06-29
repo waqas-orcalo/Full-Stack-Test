@@ -27,6 +27,7 @@ import SpaceDashboardOutlinedIcon from "@mui/icons-material/SpaceDashboardOutlin
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useAuth } from "@hooks/use-auth";
 import { useCart } from "@root/contexts/cart-context";
+import { useThemePreset } from "@hooks/use-theme-preset";
 import { paths } from "@root/path";
 
 /**
@@ -37,6 +38,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const router = useRouter();
   const { totalItems: cartCount } = useCart();
+  const { preset } = useThemePreset();
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
   const closeMenu = () => setAnchor(null);
 
@@ -64,7 +66,7 @@ export function StoreLayout({ children }: { children: ReactNode }) {
                   width: 30,
                   height: 30,
                   borderRadius: "9px",
-                  background: "linear-gradient(135deg, #4F46E5, #7C3AED)",
+                  background: `linear-gradient(135deg, ${preset.gradient[0]}, ${preset.gradient[1]})`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",

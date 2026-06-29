@@ -21,6 +21,7 @@ import {
 import type { ReactNode } from "react";
 
 import { useGetAdminStatsQuery } from "@services/app/admin-stats-api";
+import { useThemePreset } from "@hooks/use-theme-preset";
 import { ApiErrorState, Loading, PageHeader } from "@components/index";
 import type { OrderStatus } from "@root/types/order";
 
@@ -73,6 +74,7 @@ function Kpi({
 
 export default function AdminDashboard() {
   const { data, isLoading, isError } = useGetAdminStatsQuery();
+  const { preset } = useThemePreset();
   const stats = data?.data;
 
   if (isLoading) return <Loading label="Loading dashboard…" />;
@@ -117,7 +119,7 @@ export default function AdminDashboard() {
                   <YAxis tick={{ fontSize: 12 }} axisLine={false} tickLine={false} width={48}
                     tickFormatter={(v) => `$${v >= 1000 ? `${Math.round(v / 1000)}k` : v}`} />
                   <Tooltip formatter={(v: number) => [`$${v.toLocaleString()}`, "Sales"]} />
-                  <Bar dataKey="total" fill="#6366F1" radius={[8, 8, 0, 0]} maxBarSize={48} />
+                  <Bar dataKey="total" fill={preset.primary} radius={[8, 8, 0, 0]} maxBarSize={48} />
                 </BarChart>
               </ResponsiveContainer>
             </Box>

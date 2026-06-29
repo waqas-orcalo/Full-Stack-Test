@@ -17,14 +17,15 @@ import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
 import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { paths } from "@root/path";
 import { useAuth } from "@hooks/use-auth";
+import { useThemePreset } from "@hooks/use-theme-preset";
 
 const DRAWER_WIDTH = 248;
-const SIDEBAR_BG = "#1D1C4D";
 
 const navItems = [
   { label: "Dashboard", href: paths.admin.dashboard, icon: <DashboardOutlinedIcon />, exact: true },
@@ -32,6 +33,7 @@ const navItems = [
   { label: "Categories", href: paths.admin.categories, icon: <CategoryOutlinedIcon /> },
   { label: "Orders", href: paths.admin.orders, icon: <ReceiptLongOutlinedIcon /> },
   { label: "Customers", href: paths.admin.customers, icon: <GroupOutlinedIcon /> },
+  { label: "Settings", href: paths.admin.settings, icon: <SettingsOutlinedIcon /> },
 ];
 
 interface DashboardLayoutProps {
@@ -46,6 +48,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuth();
+  const { preset } = useThemePreset();
+  const SIDEBAR_BG = preset.sidebar;
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
@@ -90,7 +94,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 width: 26,
                 height: 26,
                 borderRadius: "8px",
-                background: "linear-gradient(135deg, #6366F1, #7C3AED)",
+                background: `linear-gradient(135deg, ${preset.gradient[0]}, ${preset.gradient[1]})`,
               }}
             />
             <Typography sx={{ color: "#fff", fontWeight: 800, fontFamily: "Outfit, sans-serif" }}>

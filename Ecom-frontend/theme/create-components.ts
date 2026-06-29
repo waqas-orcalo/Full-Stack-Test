@@ -22,7 +22,7 @@ export const createComponents = (): Components<Theme> => ({
         boxShadow: "none",
       },
       containedPrimary: {
-        "&:hover": { boxShadow: "0 6px 16px rgba(79,70,229,0.28)" },
+        "&:hover": { boxShadow: "0 6px 16px rgba(16,24,40,0.20)" },
       },
       sizeLarge: { paddingTop: 11, paddingBottom: 11, fontSize: 15 },
     },

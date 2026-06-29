@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 
 import { useLoginMutation, useSignupMutation } from "@services/app/auth-api";
 import { useAuth } from "@hooks/use-auth";
+import { useThemePreset } from "@hooks/use-theme-preset";
 import { paths } from "@root/path";
 import { Button, RHFTextField } from "@components/index";
 
@@ -32,6 +33,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   const params = useSearchParams();
   const redirect = params.get("redirect");
   const { setCredentials } = useAuth();
+  const { preset } = useThemePreset();
 
   const [login, { isLoading: loggingIn }] = useLoginMutation();
   const [signup, { isLoading: signingUp }] = useSignupMutation();
@@ -88,7 +90,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
             justifyContent: "space-between",
             p: 5,
             color: "#fff",
-            background: "linear-gradient(150deg, #312E81, #7C3AED)",
+            background: `linear-gradient(150deg, ${preset.gradient[0]}, ${preset.gradient[1]})`,
           }}
         >
           <Stack direction="row" alignItems="center" gap={1}>
