@@ -51,6 +51,14 @@ export default function StoreCatalog() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
+  // React to external URL changes (e.g. the global header search) when this
+  // page is already mounted.
+  useEffect(() => {
+    const urlSearch = sp.get("search") ?? "";
+    setSearchInput((prev) => (prev !== urlSearch ? urlSearch : prev));
+    setSearch((prev) => (prev !== urlSearch ? urlSearch : prev));
+  }, [sp]);
+
   // Reflect filter state in the URL (shareable, back/forward friendly).
   useEffect(() => {
     const params = new URLSearchParams();

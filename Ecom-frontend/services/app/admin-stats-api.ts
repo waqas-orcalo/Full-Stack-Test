@@ -6,8 +6,17 @@ import type { OrderStatus } from "@root/types/order";
 export interface AdminStats {
   totalRevenue: number;
   totalOrders: number;
+  avgOrderValue: number;
+  totalCustomers: number;
+  deltas: {
+    revenuePct: number;
+    ordersPct: number;
+    avgPct: number;
+    newCustomers: number;
+  };
   ordersByStatus: Record<OrderStatus, number>;
-  topProducts: { name: string; unitsSold: number }[];
+  salesOverTime: { label: string; total: number }[];
+  topProducts: { name: string; category: string; unitsSold: number; revenue: number }[];
 }
 
 export const adminStatsAPI = baseAPI.injectEndpoints({

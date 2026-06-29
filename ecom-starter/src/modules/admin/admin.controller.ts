@@ -21,6 +21,12 @@ export class AdminController {
     return ApiResponseDto.of(await this.adminService.findAllOrders(), 'All orders');
   }
 
+  @Get('customers')
+  @ApiOperation({ summary: 'List customers with order stats (admin)' })
+  async customers() {
+    return ApiResponseDto.of(await this.adminService.findAllCustomers(), 'Customers');
+  }
+
   @Get('stats')
   @ApiOperation({ summary: 'Dashboard statistics (admin)' })
   async stats() {

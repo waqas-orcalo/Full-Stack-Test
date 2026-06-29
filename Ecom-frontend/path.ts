@@ -20,5 +20,6 @@ export const paths = {
     editProduct: (id: string | number) => `/admin/products/${id}/edit`,
     categories: "/admin/categories",
     orders: "/admin/orders",
+    customers: "/admin/customers",
   },
 };

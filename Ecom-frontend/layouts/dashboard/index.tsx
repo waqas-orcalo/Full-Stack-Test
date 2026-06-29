@@ -13,10 +13,10 @@ import {
   Typography,
 } from "@mui/material";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
-import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
+import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -31,6 +31,7 @@ const navItems = [
   { label: "Products", href: paths.admin.products, icon: <Inventory2OutlinedIcon /> },
   { label: "Categories", href: paths.admin.categories, icon: <CategoryOutlinedIcon /> },
   { label: "Orders", href: paths.admin.orders, icon: <ReceiptLongOutlinedIcon /> },
+  { label: "Customers", href: paths.admin.customers, icon: <GroupOutlinedIcon /> },
 ];
 
 interface DashboardLayoutProps {
@@ -65,14 +66,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             Admin
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
-          <ListItemButton
-            component={Link}
-            href={paths.products.base}
-            sx={{ flexGrow: 0, borderRadius: 2, px: 2 }}
-          >
-            <StorefrontOutlinedIcon sx={{ mr: 1, fontSize: 18 }} />
-            <ListItemText primary="View store" />
-          </ListItemButton>
         </Toolbar>
       </AppBar>
 

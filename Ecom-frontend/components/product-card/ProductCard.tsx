@@ -21,7 +21,12 @@ export default function ProductCard({
 }) {
   const badge = stockBadge(product.stockQuantity);
   return (
-    <Card sx={{ height: "100%" }}>
+    <Card
+      sx={{
+        height: "100%",
+        "&:hover": { boxShadow: "0 12px 28px rgba(16,24,40,0.12)", transform: "translateY(-3px)" },
+      }}
+    >
       <CardActionArea
         component={Link}
         href={paths.products.view(product.id)}
